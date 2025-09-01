@@ -1,17 +1,17 @@
 // WorkerDashboard.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { Power, Check, X, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AnimatedPage from "@/components/AnimatedPage";
 import { useToast } from "@/components/ui/use-toast";
-import { Helmet } from "react-helmet";
 
 const IncomingJob = {
     id: 1,
     title: "Antar Dokumen",
+    description: "Ambil dokumen dari kantor pusat dan antarkan ke klien di SCBD.",
     client: "Andi W.",
     distance: "1.2 km",
     fee: "Rp 25.000",
@@ -25,21 +25,36 @@ export default function WorkerDashboard() {
 
     const toggleOnline = () => {
         setIsOnline(!isOnline);
+
         if (!isOnline) {
-            toast({ title: "Online", description: "Menunggu pekerjaan..." });
+            toast({
+                title: "Online",
+                description: "Menunggu pekerjaan...",
+            });
             setTimeout(() => setShowJobRequest(true), 2500);
         } else {
-            toast({ title: "Offline", variant: "destructive" });
+            toast({
+                title: "Offline",
+                variant: "destructive",
+            });
             setShowJobRequest(false);
         }
     };
 
     const handleJobResponse = (accepted) => {
         setShowJobRequest(false);
+
         if (accepted) {
-            toast({ title: "Pekerjaan Diterima", description: "Mengalihkan ke pelacakan..." });
+            toast({
+                title: "Pekerjaan Diterima",
+                description: "Mengalihkan ke pelacakan...",
+            });
         } else {
-            toast({ title: "Ditolak", description: "Mencari pekerjaan lain...", variant: "destructive" });
+            toast({
+                title: "Ditolak",
+                description: "Mencari pekerjaan lain...",
+                variant: "destructive",
+            });
         }
     };
 
@@ -49,7 +64,10 @@ export default function WorkerDashboard() {
                 <title>Dashboard Pekerja — Kerjain</title>
             </Helmet>
 
-            <div className="mx-auto max-w-lg space-y-8 px-4 pb-16 pt-6">
+            <div className="relative mx-auto max-w-lg space-y-8 px-4 pb-16 pt-6">
+                {/* Grid Pattern Background */}
+                <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[length:24px_24px]" />
+
                 {/* Status Online */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -60,9 +78,12 @@ export default function WorkerDashboard() {
                     <div className="text-center sm:text-left">
                         <h1 className="text-xl font-semibold text-white">Halo, Pekerja</h1>
                         <p className="text-sm text-white/60 mt-1">
-                            {isOnline ? "Sedang online & siap menerima pekerjaan" : "Anda sedang offline"}
+                            {isOnline
+                                ? "Sedang online & siap menerima pekerjaan"
+                                : "Anda sedang offline"}
                         </p>
                     </div>
+
                     <Button
                         size="lg"
                         onClick={toggleOnline}
@@ -77,7 +98,7 @@ export default function WorkerDashboard() {
                 </motion.div>
 
                 {/* Job Requests */}
-                <div className="relative min-h-[280px] flex items-center justify-center">
+                <div className="relative min-h-[300px] flex items-center justify-center">
                     <AnimatePresence mode="wait">
                         {showJobRequest && isOnline ? (
                             <motion.div
@@ -94,41 +115,63 @@ export default function WorkerDashboard() {
                                             Pekerjaan Baru
                                         </CardTitle>
                                     </CardHeader>
+
                                     <CardContent className="space-y-4">
-                                        <h3 className="text-center text-base font-medium text-white">
-                                            {IncomingJob.title}
-                                        </h3>
+                                        <div className="text-center">
+                                            <h3 className="text-base font-medium text-white">
+                                                {IncomingJob.title}
+                                            </h3>
+                                            <p className="mt-1 text-sm text-white/70">
+                                                {IncomingJob.description}
+                                            </p>
+                                        </div>
+
                                         <div className="grid grid-cols-2 gap-3 text-sm">
                                             <div className="rounded-xl bg-white/5 p-3">
                                                 <p className="text-xs text-white/60">Klien</p>
-                                                <p className="font-medium text-white">{IncomingJob.client}</p>
+                                                <p className="font-medium text-white">
+                                                    {IncomingJob.client}
+                                                </p>
                                             </div>
+
                                             <div className="rounded-xl bg-white/5 p-3">
                                                 <p className="text-xs text-white/60">Bayaran</p>
-                                                <p className="font-semibold text-emerald-400">{IncomingJob.fee}</p>
+                                                <p className="font-semibold text-emerald-400">
+                                                    {IncomingJob.fee}
+                                                </p>
                                             </div>
+
                                             <div className="flex items-center gap-2 rounded-xl bg-white/5 p-3">
                                                 <MapPin className="h-4 w-4 text-purple-300" />
-                                                <span className="text-white text-sm">{IncomingJob.distance}</span>
+                                                <span className="text-white text-sm">
+                                                    {IncomingJob.distance}
+                                                </span>
                                             </div>
+
                                             <div className="flex items-center gap-2 rounded-xl bg-white/5 p-3">
                                                 <Clock className="h-4 w-4 text-purple-300" />
-                                                <span className="text-white text-sm">{IncomingJob.time}</span>
+                                                <span className="text-white text-sm">
+                                                    {IncomingJob.time}
+                                                </span>
                                             </div>
                                         </div>
+
                                         <div className="flex gap-3 pt-2">
                                             <Button
                                                 onClick={() => handleJobResponse(false)}
                                                 variant="destructive"
                                                 className="w-full"
                                             >
-                                                <X className="mr-2 h-4 w-4" /> Tolak
+                                                <X className="mr-2 h-4 w-4" />
+                                                Tolak
                                             </Button>
+
                                             <Button
                                                 onClick={() => handleJobResponse(true)}
                                                 className="w-full bg-emerald-500 hover:bg-emerald-600"
                                             >
-                                                <Check className="mr-2 h-4 w-4" /> Terima
+                                                <Check className="mr-2 h-4 w-4" />
+                                                Terima
                                             </Button>
                                         </div>
                                     </CardContent>

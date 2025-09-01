@@ -13,10 +13,13 @@ import {
     ScanLine,
 } from "lucide-react";
 
+// --- Helpers
 const fmtIDR = (n) =>
-    new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(
-        n
-    );
+    new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        maximumFractionDigits: 0,
+    }).format(n);
 
 const seedTx = [
     { id: 1, type: "in", title: "Pembayaran Budi", amount: 150000, date: "2025-08-30" },
@@ -44,24 +47,15 @@ export default function WalletPage() {
         return seedTx;
     }, [activeTab]);
 
-    // Framer variants
+    // Animation variants
     const fadeUp = {
         hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 12 },
         show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
     };
 
-    const stagger = {
-        show: {
-            transition: {
-                staggerChildren: shouldReduceMotion ? 0 : 0.05,
-            },
-        },
-    };
-
     return (
-        <div className="relative min-h-dvh w-full">
-            {/* background subtle grid */}
-            <div className="pointer-events-none absolute inset-0 opacity-20 [mask-image:radial-gradient(70%_60%_at_50%_20%,black,transparent_80%)]" />
+        <div className="relative min-h-dvh w-full overflow-hidden">
+            {/* Grid Pattern Background */}
             <div
                 aria-hidden
                 className="pointer-events-none absolute inset-0 opacity-20 mix-blend-soft-light"
@@ -70,84 +64,84 @@ export default function WalletPage() {
                         "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
                 }}
             />
+            {/* Gradient blobs for depth */}
+            <div className="absolute -top-20 left-0 h-72 w-72 animate-pulse rounded-full bg-purple-500/20 blur-3xl" />
+            <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-blue-500/20 blur-3xl" />
 
+            {/* Main Content */}
             <div className="relative mx-auto max-w-lg px-4 pb-20 pt-6">
-                {/* Top Bar */}
+                {/* Header */}
                 <div className="mb-5 flex items-center gap-3">
                     <Link
                         to={-1}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 backdrop-blur-md ring-1 ring-white/15 hover:bg-white/20"
                     >
-                        <ArrowLeft className="h-5 w-5 text-white/80" />
+                        <ArrowLeft className="h-5 w-5 text-white" />
                     </Link>
                     <div className="flex items-center gap-2">
                         <Wallet className="h-5 w-5 text-white/70" />
-                        <h1 className="text-lg font-semibold text-white/90">Dompet</h1>
+                        <h1 className="text-lg font-semibold text-white">Dompet</h1>
                     </div>
                 </div>
 
-                {/* Balance */}
-                <motion.section initial="hidden" animate="show" variants={stagger}>
-                    <motion.div variants={fadeUp}>
-                        <BalanceCard
-                            isLoading={isLoading}
-                            balance={balance}
-                            onTopUp={() => alert("Top Up")}
-                            onWithdraw={() => alert("Tarik Dana")}
-                        />
-                    </motion.div>
+                {/* Balance Section */}
+                <motion.div variants={fadeUp} initial="hidden" animate="show">
+                    <BalanceCard
+                        isLoading={isLoading}
+                        balance={balance}
+                        onTopUp={() => alert("Top Up")}
+                        onWithdraw={() => alert("Tarik Dana")}
+                    />
+                </motion.div>
 
-                    <motion.div variants={fadeUp} className="mt-4">
-                        <QuickActions />
-                    </motion.div>
-                </motion.section>
+                {/* Quick Actions */}
+                <motion.div variants={fadeUp} initial="hidden" animate="show" className="mt-4">
+                    <QuickActions />
+                </motion.div>
 
-                {/* Tabs + Transactions */}
-                <motion.section initial="hidden" animate="show" variants={stagger} className="mt-6">
-                    <motion.div variants={fadeUp} className="mb-4">
-                        <div className="inline-flex overflow-hidden rounded-2xl bg-white/10 p-1 backdrop-blur-md ring-1 ring-white/15">
-                            {[
-                                { key: "semua", label: "Semua" },
-                                { key: "masuk", label: "Masuk" },
-                                { key: "keluar", label: "Keluar" },
-                            ].map((t) => (
-                                <button
-                                    key={t.key}
-                                    onClick={() => setActiveTab(t.key)}
-                                    className={`rounded-xl px-4 py-2 text-sm font-medium transition focus:outline-none ${activeTab === t.key
-                                        ? "bg-white/20 text-white shadow-inner"
+                {/* Tabs & Transactions */}
+                <motion.div variants={fadeUp} initial="hidden" animate="show" className="mt-6 space-y-4">
+                    {/* Tabs */}
+                    <div className="inline-flex overflow-hidden rounded-2xl bg-white/10 p-1 backdrop-blur-md ring-1 ring-white/15">
+                        {[
+                            { key: "semua", label: "Semua" },
+                            { key: "masuk", label: "Masuk" },
+                            { key: "keluar", label: "Keluar" },
+                        ].map((t) => (
+                            <button
+                                key={t.key}
+                                onClick={() => setActiveTab(t.key)}
+                                className={`rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === t.key
+                                        ? "bg-white/20 text-white"
                                         : "text-white/70 hover:text-white hover:bg-white/10"
-                                        }`}
-                                    aria-pressed={activeTab === t.key}
-                                >
-                                    {t.label}
-                                </button>
-                            ))}
-                        </div>
-                    </motion.div>
+                                    }`}
+                            >
+                                {t.label}
+                            </button>
+                        ))}
+                    </div>
 
-                    <motion.div variants={fadeUp}>
-                        <CardWrapper>
-                            <div className="flex items-center gap-2 pb-2">
-                                <Receipt className="h-5 w-5 text-white/70" />
-                                <h2 className="text-base font-semibold text-white/90">Riwayat</h2>
-                            </div>
-                            <div className="divide-y divide-white/10">
-                                <AnimatePresence initial={false}>
-                                    {isLoading
-                                        ? Array.from({ length: 4 }).map((_, i) => <TxSkeleton key={i} />)
-                                        : filtered.map((tx) => <TransactionItem key={tx.id} tx={tx} />)}
-                                </AnimatePresence>
-                            </div>
-                        </CardWrapper>
-                    </motion.div>
-                </motion.section>
+                    {/* Transaction History */}
+                    <CardWrapper>
+                        <div className="flex items-center gap-2 pb-2">
+                            <Receipt className="h-5 w-5 text-white/70" />
+                            <h2 className="text-base font-semibold text-white">Riwayat</h2>
+                        </div>
+                        <div className="divide-y divide-white/10">
+                            <AnimatePresence initial={false}>
+                                {isLoading
+                                    ? Array.from({ length: 4 }).map((_, i) => <TxSkeleton key={i} />)
+                                    : filtered.map((tx) => <TransactionItem key={tx.id} tx={tx} />)}
+                            </AnimatePresence>
+                        </div>
+                    </CardWrapper>
+                </motion.div>
             </div>
         </div>
     );
 }
 
-// -------------------- Subcomponents --------------------
+// ---------------- Subcomponents ----------------
 
 function CardWrapper({ children }) {
     return (
@@ -159,8 +153,9 @@ function CardWrapper({ children }) {
 
 function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
     return (
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-2xl shadow-xl">
+        <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-2xl shadow-xl">
             <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+                {/* Saldo */}
                 <div>
                     <p className="text-xs uppercase tracking-wide text-white/60">Saldo</p>
                     {isLoading ? (
@@ -172,6 +167,8 @@ function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
                         </div>
                     )}
                 </div>
+
+                {/* Actions */}
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                     <button
                         onClick={onTopUp}
@@ -181,7 +178,7 @@ function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
                     </button>
                     <button
                         onClick={onWithdraw}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-transparent px-4 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-white/30 hover:bg-white/10"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-white ring-1 ring-inset ring-white/30 hover:bg-white/10"
                     >
                         <Download className="h-4 w-4" /> Tarik
                     </button>
@@ -193,18 +190,8 @@ function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
 
 function QuickActions() {
     const actions = [
-        {
-            icon: <Shuffle className="h-5 w-5" />,
-            title: "Transfer",
-            desc: "Kirim ke rekan cepat.",
-            onClick: () => alert("Transfer"),
-        },
-        {
-            icon: <ScanLine className="h-5 w-5" />,
-            title: "Scan & Pay",
-            desc: "Bayar via QR.",
-            onClick: () => alert("Scan & Pay"),
-        },
+        { icon: <Shuffle className="h-5 w-5" />, title: "Transfer", desc: "Kirim cepat", onClick: () => alert("Transfer") },
+        { icon: <ScanLine className="h-5 w-5" />, title: "Scan & Pay", desc: "Bayar QR", onClick: () => alert("Scan & Pay") },
     ];
 
     return (
@@ -246,28 +233,19 @@ function TransactionItem({ tx }) {
         >
             <div className="flex items-center gap-4">
                 <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isIn
-                        ? "bg-emerald-400/15 text-emerald-300"
-                        : "bg-rose-400/15 text-rose-300"
+                    className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isIn ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"
                         }`}
                 >
                     {isIn ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
                 </div>
                 <div>
                     <p className="text-sm font-medium text-white/90">{tx.title}</p>
-                    <p className="text-xs text-white/60">
-                        {new Date(tx.date).toLocaleDateString("id-ID")}
-                    </p>
+                    <p className="text-xs text-white/60">{new Date(tx.date).toLocaleDateString("id-ID")}</p>
                 </div>
             </div>
-            <div className="text-right">
-                <p
-                    className={`text-sm font-semibold ${isIn ? "text-emerald-300" : "text-rose-300"
-                        }`}
-                >
-                    {isIn ? "+" : "-"} {fmtIDR(tx.amount)}
-                </p>
-            </div>
+            <p className={`text-sm font-semibold ${isIn ? "text-emerald-300" : "text-rose-300"}`}>
+                {isIn ? "+" : "-"} {fmtIDR(tx.amount)}
+            </p>
         </motion.div>
     );
 }
