@@ -2,25 +2,28 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-    Plus,
-    ShoppingCart,
-    Code,
-    Hammer,
-    Paintbrush,
-    PartyPopper,
-} from "lucide-react";
+import { Plus, Clock, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import AnimatedPage from "@/components/AnimatedPage";
 import { Helmet } from "react-helmet";
 
-const categories = [
-    { name: "Urusan Harian", icon: ShoppingCart },
-    { name: "Jasa Digital", icon: Code },
-    { name: "Tenaga Manual", icon: Hammer },
-    { name: "Kreatif", icon: Paintbrush },
-    { name: "Bantuan Acara", icon: PartyPopper },
+const quickActions = [
+    {
+        title: "Posting Pekerjaan",
+        icon: Plus,
+        path: "/post-job",
+    },
+    {
+        title: "Lihat Riwayat",
+        icon: Clock,
+        path: "/history",
+    },
+    {
+        title: "Chat Worker",
+        icon: MessageSquare,
+        path: "/chat",
+    },
 ];
 
 const activeJobs = [
@@ -47,73 +50,78 @@ const ClientDashboard = () => {
                 <title>Dashboard Klien - Kerjain</title>
             </Helmet>
 
-            <div className="relative min-h-screen space-y-10 px-4 py-6 md:px-8">
+            <div className="relative min-h-screen bg-background text-foreground px-4 py-6 md:px-8">
+                {/* Gradient blobs */}
+                <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
+                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
+
                 {/* Grid background */}
                 <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-20"
+                    className="pointer-events-none absolute inset-0 -z-10 opacity-6"
                     style={{
                         backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
+                            "repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px), repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px)",
                     }}
                 />
-                {/* Gradient blobs */}
-                <div className="absolute -top-24 -left-16 h-72 w-72 animate-pulse rounded-full bg-purple-600/30 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-blue-600/20 blur-3xl" />
 
                 {/* Welcome Card */}
                 <motion.div
                     initial={{ opacity: 0, y: -15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="relative z-10 glassmorphic-card flex flex-col items-center justify-between gap-4 rounded-2xl p-6 md:flex-row"
+                    className="relative z-10 glassmorphic-card rounded-2xl p-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
                 >
                     <div className="text-center md:text-left">
-                        <h1 className="text-2xl font-bold text-white md:text-3xl">
-                            Selamat Datang, User!
+                        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                            Halo, User 👋
                         </h1>
-                        <p className="text-sm text-white/70 md:text-base">
-                            Siap menyelesaikan sesuatu hari ini?
+                        <p className="text-sm md:text-base text-muted-foreground">
+                            Siap beresin sesuatu hari ini?
                         </p>
                     </div>
                     <Link to="/post-job" className="w-full md:w-auto">
-                        <Button className="group w-full bg-white text-deep-indigo font-semibold hover:bg-gray-200">
+                        <Button
+                            size="lg"
+                            className="w-full md:w-auto bg-primary text-primary-foreground font-semibold hover:scale-105 transition-transform"
+                        >
                             <Plus className="mr-2 h-5 w-5" />
-                            Posting Pekerjaan
+                            Posting Cepat
                         </Button>
                     </Link>
                 </motion.div>
 
-                {/* Categories */}
-                <div className="relative z-10 space-y-4">
-                    <h2 className="text-lg font-bold text-white md:text-2xl">
-                        Pilih Kategori
+                {/* Quick Actions */}
+                <div className="relative z-10 mt-8 space-y-4">
+                    <h2 className="text-lg md:text-2xl font-bold text-foreground">
+                        Aksi Cepat
                     </h2>
-                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-                        {categories.map((category, index) => (
+                    <div className="grid grid-cols-3 gap-4">
+                        {quickActions.map((action, index) => (
                             <motion.div
-                                key={index}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.3, delay: index * 0.05 }}
+                                key={action.title}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3, delay: index * 0.1 }}
                             >
-                                <Card className="cursor-pointer rounded-2xl border border-white/10 bg-white/10 p-4 text-center backdrop-blur-xl transition hover:bg-white/20">
-                                    <CardContent className="flex flex-col items-center gap-2 p-0">
-                                        <category.icon className="h-8 w-8 text-purple-300" />
-                                        <p className="text-sm font-medium text-white">
-                                            {category.name}
-                                        </p>
-                                    </CardContent>
-                                </Card>
+                                <Link to={action.path}>
+                                    <Card className="cursor-pointer rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl hover:bg-background/60 hover:scale-105 transition">
+                                        <CardContent className="flex flex-col items-center justify-center gap-2 p-4">
+                                            <action.icon className="h-6 w-6 text-primary" />
+                                            <p className="text-xs sm:text-sm font-medium text-foreground text-center">
+                                                {action.title}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </Link>
                             </motion.div>
                         ))}
                     </div>
                 </div>
 
                 {/* Active Jobs */}
-                {/* Active Jobs */}
-                <div className="relative z-10 space-y-4">
-                    <h2 className="text-lg font-bold text-white md:text-2xl">
+                <div className="relative z-10 mt-10 space-y-4">
+                    <h2 className="text-lg md:text-2xl font-bold text-foreground">
                         Pekerjaan Aktif
                     </h2>
                     {activeJobs.length > 0 ? (
@@ -126,39 +134,40 @@ const ClientDashboard = () => {
                                     transition={{ duration: 0.4, delay: i * 0.1 }}
                                 >
                                     <Link to={`/job/${job.id}/track`}>
-                                        <Card className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-xl transition hover:bg-white/20">
-                                            <CardHeader className="pb-2">
-                                                <CardTitle className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-white">
-                                                    <span className="text-base font-semibold leading-snug sm:text-lg">
+                                        <Card className="rounded-2xl border border-border/40 bg-background/40 backdrop-blur-xl transition hover:bg-background/60 hover:scale-[1.01]">
+                                            <CardContent className="space-y-4 p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-base sm:text-lg font-semibold text-foreground">
                                                         {job.title}
                                                     </span>
                                                     <span
                                                         className={`w-fit rounded-full px-3 py-1 text-xs sm:text-sm font-medium ${job.status === "Dalam Pengerjaan"
-                                                                ? "bg-blue-500/20 text-blue-300"
-                                                                : "bg-yellow-500/20 text-yellow-300"
+                                                                ? "bg-primary/20 text-primary"
+                                                                : "bg-accent/20 text-accent"
                                                             }`}
                                                     >
                                                         {job.status}
                                                     </span>
-                                                </CardTitle>
-                                            </CardHeader>
+                                                </div>
 
-                                            <CardContent className="space-y-4">
-                                                <p className="text-sm text-white/70 sm:text-base">
-                                                    Pekerja: <span className="font-medium">{job.worker}</span>
+                                                <p className="text-sm sm:text-base text-muted-foreground">
+                                                    Pekerja:{" "}
+                                                    <span className="font-medium text-foreground">
+                                                        {job.worker}
+                                                    </span>
                                                 </p>
 
                                                 <div>
-                                                    <div className="mb-1 flex justify-between text-xs sm:text-sm text-white/70">
+                                                    <div className="mb-1 flex justify-between text-xs sm:text-sm text-muted-foreground">
                                                         <span>Progress</span>
                                                         <span>{job.progress}%</span>
                                                     </div>
-                                                    <div className="h-3 w-full rounded-full bg-white/10">
+                                                    <div className="h-3 w-full rounded-full bg-muted">
                                                         <motion.div
                                                             initial={{ width: 0 }}
                                                             animate={{ width: `${job.progress}%` }}
                                                             transition={{ duration: 0.8, ease: "easeOut" }}
-                                                            className="h-3 rounded-full bg-purple-500"
+                                                            className="h-3 rounded-full bg-primary"
                                                         />
                                                     </div>
                                                 </div>
@@ -170,13 +179,12 @@ const ClientDashboard = () => {
                         </div>
                     ) : (
                         <div className="glassmorphic-card text-center rounded-2xl py-12">
-                            <p className="text-white/70">
-                                Anda tidak memiliki pekerjaan aktif saat ini.
+                            <p className="text-muted-foreground">
+                                Belum ada pekerjaan aktif. Mau bikin yang baru?
                             </p>
                         </div>
                     )}
                 </div>
-
             </div>
         </AnimatedPage>
     );

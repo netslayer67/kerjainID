@@ -2,14 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import {
-    ArrowLeft,
-    Wallet,
-    Star,
-    Bell,
-    Check,
-    X,
-} from "lucide-react";
+import { ArrowLeft, Wallet, Star, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import AnimatedPage from "@/components/AnimatedPage";
@@ -59,9 +52,7 @@ const NotificationPage = () => {
 
     const handleMarkRead = (id) => {
         setNotifications((prev) =>
-            prev.map((n) =>
-                n.id === id ? { ...n, read: true } : n
-            )
+            prev.map((n) => (n.id === id ? { ...n, read: true } : n))
         );
     };
 
@@ -71,20 +62,41 @@ const NotificationPage = () => {
                 <title>Notifikasi — Kerjain</title>
             </Helmet>
 
-            <div className="mx-auto max-w-lg space-y-6 px-4 pb-16 pt-6">
+            <div className="relative mx-auto max-w-lg px-4 pb-16 pt-6 space-y-6">
+                {/* Background grid & glow */}
+                <div
+                    aria-hidden
+                    className="absolute inset-0 opacity-20 pointer-events-none mix-blend-soft-light"
+                    style={{
+                        backgroundImage:
+                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 48px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 48px)",
+                    }}
+                />
+                <div className="absolute -top-20 left-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-pulse" />
+                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-secondary/20 blur-3xl animate-pulse" />
+
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <motion.div
+                    initial={{ opacity: 0, y: -16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                    className="flex items-center justify-between relative z-10"
+                >
                     <div className="flex items-center gap-3">
                         <Link to={-1}>
-                            <Button variant="ghost" size="icon">
-                                <ArrowLeft className="h-5 w-5" />
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full bg-card/30 backdrop-blur-lg hover:bg-card/50"
+                            >
+                                <ArrowLeft className="h-5 w-5 text-foreground" />
                             </Button>
                         </Link>
-                        <h1 className="text-lg font-semibold">Notifikasi</h1>
+                        <h1 className="text-lg font-semibold text-foreground">Notifikasi</h1>
                     </div>
                     <Button
                         variant="link"
-                        className="text-purple-300 text-sm"
+                        className="text-primary text-sm"
                         onClick={() =>
                             setNotifications((prev) =>
                                 prev.map((n) => ({ ...n, read: true }))
@@ -93,20 +105,20 @@ const NotificationPage = () => {
                     >
                         Tandai semua
                     </Button>
-                </div>
+                </motion.div>
 
                 {/* Notifications */}
-                <div className="space-y-3">
+                <div className="space-y-3 relative z-10">
                     <AnimatePresence>
-                        {notifications.map((notif) => {
+                        {notifications.map((notif, i) => {
                             const Icon = notif.icon;
                             return (
                                 <motion.div
                                     key={notif.id}
-                                    initial={{ opacity: 0, y: 10 }}
+                                    initial={{ opacity: 0, y: 12 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, x: -50 }}
-                                    transition={{ duration: 0.25 }}
+                                    transition={{ duration: 0.3, delay: i * 0.05 }}
                                 >
                                     <motion.div
                                         drag="x"
@@ -118,39 +130,43 @@ const NotificationPage = () => {
                                                 handleDismiss(notif.id);
                                             }
                                         }}
-                                        className={`cursor-pointer`}
+                                        className="cursor-pointer"
                                     >
                                         <Card
-                                            className={`overflow-hidden transition-colors ${notif.read
-                                                    ? "bg-white/5 border-white/10"
-                                                    : "bg-white/10 border-purple-400/30"
+                                            className={`rounded-2xl border backdrop-blur-xl shadow-md transition-all ${notif.read
+                                                    ? "bg-card/30 border-border"
+                                                    : "bg-primary/10 border-primary/40"
                                                 }`}
                                         >
                                             <CardContent className="flex items-start gap-4 p-4">
                                                 <div
-                                                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${notif.read ? "bg-white/10" : "bg-purple-500/20"
+                                                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${notif.read ? "bg-muted/30" : "bg-primary/20"
                                                         }`}
                                                 >
                                                     <Icon
                                                         className={`h-5 w-5 ${notif.read
-                                                                ? "text-white/50"
-                                                                : "text-purple-300"
+                                                                ? "text-muted-foreground"
+                                                                : "text-primary"
                                                             }`}
                                                     />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-medium truncate">
+                                                    <p className="text-sm font-medium truncate text-foreground">
                                                         {notif.title}
                                                     </p>
-                                                    <p className="text-xs text-white/70 truncate">
+                                                    <p className="text-xs text-muted-foreground truncate">
                                                         {notif.text}
                                                     </p>
-                                                    <p className="mt-1 text-[11px] text-white/50">
+                                                    <p className="mt-1 text-[11px] text-muted-foreground">
                                                         {notif.time}
                                                     </p>
                                                 </div>
                                                 {!notif.read && (
-                                                    <div className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-purple-400" />
+                                                    <motion.div
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-primary"
+                                                    />
                                                 )}
                                             </CardContent>
                                         </Card>
@@ -161,8 +177,9 @@ const NotificationPage = () => {
                     </AnimatePresence>
                 </div>
 
+                {/* Empty state */}
                 {notifications.length === 0 && (
-                    <p className="text-center text-sm text-white/60 pt-8">
+                    <p className="text-center text-sm text-muted-foreground pt-8">
                         Tidak ada notifikasi
                     </p>
                 )}

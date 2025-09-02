@@ -24,34 +24,34 @@ export default function ChatPage() {
                 {/* Grid Pattern Background */}
                 <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-15"
+                    className="pointer-events-none absolute inset-0 opacity-[0.07]"
                     style={{
                         backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
+                            "repeating-linear-gradient(to_right, hsl(var(--muted-foreground)/.12) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, hsl(var(--muted-foreground)/.12) 0 1px, transparent 1px 56px)",
                     }}
                 />
-                {/* Gradient Blobs */}
-                <div className="absolute -top-20 -left-10 h-72 w-72 animate-pulse rounded-full bg-purple-600/30 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-blue-600/20 blur-3xl" />
+                {/* Gradient blobs */}
+                <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
+                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
 
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="relative z-10 flex items-center gap-3 border-b border-white/10 bg-white/10 px-4 py-3 backdrop-blur-xl"
+                    className="relative z-10 flex items-center gap-3 border-b border-border bg-card/50 px-4 py-3 backdrop-blur-xl"
                 >
                     <Link to={-1}>
                         <Button variant="ghost" size="icon" className="rounded-full">
-                            <ArrowLeft className="h-5 w-5 text-white" />
+                            <ArrowLeft className="h-5 w-5 text-foreground" />
                         </Button>
                     </Link>
                     <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-500 text-sm font-semibold text-white">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                             B
                         </div>
                         <div>
-                            <h1 className="text-sm font-semibold text-white">Budi Santoso</h1>
+                            <h1 className="text-sm font-semibold text-foreground">Budi Santoso</h1>
                             <p className="text-xs text-emerald-400">Online</p>
                         </div>
                     </div>
@@ -68,13 +68,13 @@ export default function ChatPage() {
                             className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
                         >
                             <div
-                                className={`max-w-[75%] rounded-2xl px-4 py-2 shadow-md backdrop-blur ${msg.sender === "me"
-                                        ? "rounded-br-none bg-purple-600 text-white"
-                                        : "rounded-bl-none bg-white/10 text-white"
+                                className={`max-w-[75%] rounded-2xl px-4 py-2 shadow-xl backdrop-blur ${msg.sender === "me"
+                                    ? "rounded-br-none bg-primary text-primary-foreground"
+                                    : "rounded-bl-none bg-card/70 text-foreground"
                                     }`}
                             >
                                 <p className="text-sm leading-relaxed">{msg.text}</p>
-                                <p className="mt-1 text-[11px] text-right text-white/60">
+                                <p className="mt-1 text-[11px] text-right text-muted-foreground">
                                     {msg.time}
                                 </p>
                             </div>
@@ -87,21 +87,21 @@ export default function ChatPage() {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="relative z-10 flex items-center gap-2 border-t border-white/10 bg-white/10 px-3 py-2 backdrop-blur-xl"
+                    className="relative z-10 flex items-center gap-2 border-t border-border bg-card/50 px-3 py-2 backdrop-blur-xl"
                 >
                     <Button variant="ghost" size="icon" type="button" className="rounded-full">
-                        <Paperclip className="h-5 w-5 text-white/70" />
+                        <Paperclip className="h-5 w-5 text-muted-foreground" />
                     </Button>
                     <Input
                         placeholder="Ketik pesan..."
-                        className="flex-1 rounded-full border-white/20 bg-white/10 text-white placeholder:text-white/50"
+                        className="flex-1 rounded-full border-border bg-background/50 text-foreground placeholder:text-muted-foreground"
                     />
                     <Button
                         size="icon"
                         type="submit"
-                        className="rounded-full bg-purple-600 hover:bg-purple-700"
+                        className="rounded-full bg-primary hover:bg-primary/90"
                     >
-                        <Send className="h-5 w-5 text-white" />
+                        <Send className="h-5 w-5 text-primary-foreground" />
                     </Button>
                 </motion.form>
             </div>

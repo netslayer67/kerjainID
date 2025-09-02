@@ -23,18 +23,21 @@ const AppLayout = () => {
     });
 
     return (
-        <div className="min-h-screen bg-deep-indigo text-white flex flex-col">
-            <header className="sticky top-0 z-40 bg-deep-indigo/80 backdrop-blur-lg border-b border-white/10">
+        <div className="min-h-screen bg-background text-foreground flex flex-col">
+            <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-                    <Link to={isWorker ? "/worker/dashboard" : "/client/dashboard"} className="text-2xl font-bold tracking-tighter">
+                    <Link
+                        to={isWorker ? "/worker/dashboard" : "/client/dashboard"}
+                        className="text-2xl font-bold tracking-tighter"
+                    >
                         Kerjain
                     </Link>
                     <div className="flex items-center gap-4">
                         <Link to="/notifications">
-                            <Bell className="h-6 w-6 text-white/80 hover:text-white transition-colors" />
+                            <Bell className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" />
                         </Link>
                         <Link to="/profile">
-                            <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center font-bold">
+                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-primary-foreground">
                                 U
                             </div>
                         </Link>
@@ -48,16 +51,24 @@ const AppLayout = () => {
 
             <footer className="sticky bottom-0 z-40 mt-auto">
                 <div className="md:hidden p-2">
-                    <nav className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl px-4 py-2">
+                    <nav className="bg-muted/50 backdrop-blur-lg border border-border rounded-2xl px-4 py-2">
                         <ul className="flex justify-around items-center">
                             {adjustedNavItems.map((item) => (
                                 <li key={item.path}>
-                                    <Link to={item.path} className="flex flex-col items-center gap-1 p-2 rounded-lg">
-                                        <item.icon className={`h-6 w-6 transition-colors ${location.pathname.startsWith(item.path) ? 'text-white' : 'text-white/50'}`} />
+                                    <Link
+                                        to={item.path}
+                                        className="flex flex-col items-center gap-1 p-2 rounded-lg"
+                                    >
+                                        <item.icon
+                                            className={`h-6 w-6 transition-colors ${location.pathname.startsWith(item.path)
+                                                ? "text-foreground"
+                                                : "text-muted-foreground"
+                                                }`}
+                                        />
                                         {location.pathname.startsWith(item.path) && (
                                             <motion.div
                                                 layoutId="active-nav-indicator"
-                                                className="h-1 w-1 bg-white rounded-full"
+                                                className="h-1 w-1 bg-foreground rounded-full"
                                             />
                                         )}
                                     </Link>
@@ -68,6 +79,7 @@ const AppLayout = () => {
                 </div>
             </footer>
         </div>
+
     );
 };
 

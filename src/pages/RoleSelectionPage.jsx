@@ -1,13 +1,46 @@
-// RoleSelectionPage.jsx
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { User, Briefcase } from "lucide-react";
 import AnimatedPage from "@/components/AnimatedPage";
 import { Helmet } from "react-helmet";
 
+const springy = {
+    whileHover: { scale: 1.04, y: -4 },
+    whileTap: { scale: 0.98 },
+    transition: { type: "spring", stiffness: 260, damping: 20 },
+};
+
+const RoleCard = ({ icon: Icon, title, subtitle, onClick, ariaLabel }) => (
+    <motion.button
+        type="button"
+        aria-label={ariaLabel}
+        onClick={onClick}
+        className="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-3xl border border-border/60 bg-foreground/5 p-8 text-foreground shadow-xl backdrop-blur-2xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background hover:border-border/80"
+        {...springy}
+    >
+        {/* Subtle inner gradient/shine */}
+        <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-br from-foreground/10 via-transparent to-transparent opacity-70 mix-blend-overlay" />
+        <div className="pointer-events-none absolute -inset-px rounded-3xl ring-1 ring-inset ring-border/60" />
+
+        <div className="relative z-10 flex flex-col items-center space-y-4">
+            <div className="rounded-2xl bg-background/70 p-5 shadow-inner backdrop-blur-xl">
+                <Icon className="h-14 w-14 text-accent" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+            <p className="text-sm text-muted-foreground">{subtitle}</p>
+        </div>
+
+        {/* Glow on hover */}
+        <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-100"
+            style={{ background: "radial-gradient(40% 40% at 50% 0%, hsl(var(--accent)/0.25) 0%, transparent 60%)" }}
+        />
+    </motion.button>
+);
+
 const RoleSelectionPage = () => {
     const navigate = useNavigate();
+    const prefersReducedMotion = useReducedMotion();
 
     const selectRole = (role) => {
         if (role === "client") navigate("/client/dashboard");
@@ -20,19 +53,32 @@ const RoleSelectionPage = () => {
                 <title>Pilih Peran — Kerjain</title>
             </Helmet>
 
-            <div className="relative flex min-h-screen items-center justify-center  px-4">
+            <div className="relative flex min-h-svh items-center justify-center px-4 py-16 sm:py-20">
                 {/* Grid overlay */}
                 <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-20"
+                    className="pointer-events-none absolute inset-0"
                     style={{
                         backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
+                            `repeating-linear-gradient(to right, hsl(var(--foreground)/0.06) 0 1px, transparent 1px 56px), repeating-linear-gradient(to bottom, hsl(var(--foreground)/0.06) 0 1px, transparent 1px 56px)`,
                     }}
                 />
-                {/* Blobs */}
-                <div className="absolute -top-24 -left-16 h-72 w-72 animate-pulse rounded-full bg-purple-600/30 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-blue-600/20 blur-3xl" />
+
+                {/* Blobs (use design tokens) */}
+                <motion.div
+                    aria-hidden
+                    initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
+                    animate={prefersReducedMotion ? {} : { opacity: 0.7, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-[hsl(var(--accent))]/30 blur-3xl"
+                />
+                <motion.div
+                    aria-hidden
+                    initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+                    animate={prefersReducedMotion ? {} : { opacity: 0.6, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.05 }}
+                    className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[hsl(var(--ring))]/25 blur-3xl"
+                />
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -40,51 +86,27 @@ const RoleSelectionPage = () => {
                     transition={{ duration: 0.6 }}
                     className="relative z-10 w-full max-w-4xl text-center"
                 >
-                    <h1 className="mb-3 text-3xl font-bold text-white md:text-4xl">
-                        Pilih Peran
-                    </h1>
-                    <p className="mb-10 text-sm text-white/60 md:text-base">
-                        Mulai sesuai kebutuhan Anda
-                    </p>
+                    <div className="mx-auto mb-10 max-w-xl">
+                        <h1 className="mb-2 text-3xl font-bold text-foreground md:text-4xl">Pilih Peran</h1>
+                        <p className="text-sm text-muted-foreground md:text-base">Mulai sesuai kebutuhan Anda</p>
+                    </div>
 
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {/* Client */}
-                        <motion.div
-                            whileHover={{ scale: 1.05, y: -6 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: "spring", stiffness: 250, damping: 20 }}
+                    <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                        <RoleCard
+                            icon={User}
+                            title="Saya Butuh Bantuan"
+                            subtitle="Posting pekerjaan, temukan pekerja."
+                            ariaLabel="Pilih peran sebagai klien"
                             onClick={() => selectRole("client")}
-                            className="cursor-pointer rounded-2xl border border-white/10 bg-white/10 p-8 shadow-xl backdrop-blur-xl hover:shadow-2xl"
-                        >
-                            <div className="flex flex-col items-center space-y-4">
-                                <User className="h-16 w-16 text-purple-300" />
-                                <h2 className="text-xl font-semibold text-white">
-                                    Saya Butuh Bantuan
-                                </h2>
-                                <p className="text-sm text-white/70">
-                                    Posting pekerjaan, temukan pekerja.
-                                </p>
-                            </div>
-                        </motion.div>
+                        />
 
-                        {/* Worker */}
-                        <motion.div
-                            whileHover={{ scale: 1.05, y: -6 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: "spring", stiffness: 250, damping: 20 }}
+                        <RoleCard
+                            icon={Briefcase}
+                            title="Saya Ingin Bekerja"
+                            subtitle="Cari pekerjaan, bangun reputasi."
+                            ariaLabel="Pilih peran sebagai pekerja"
                             onClick={() => selectRole("worker")}
-                            className="cursor-pointer rounded-2xl border border-white/10 bg-white/10 p-8 shadow-xl backdrop-blur-xl hover:shadow-2xl"
-                        >
-                            <div className="flex flex-col items-center space-y-4">
-                                <Briefcase className="h-16 w-16 text-blue-300" />
-                                <h2 className="text-xl font-semibold text-white">
-                                    Saya Ingin Bekerja
-                                </h2>
-                                <p className="text-sm text-white/70">
-                                    Cari pekerjaan, bangun reputasi.
-                                </p>
-                            </div>
-                        </motion.div>
+                        />
                     </div>
                 </motion.div>
             </div>

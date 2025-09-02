@@ -1,3 +1,4 @@
+// HelpCenterPage.jsx
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -38,17 +39,17 @@ const HelpCenterPage = () => {
             </Helmet>
 
             <div className="relative min-h-dvh w-full px-4 py-6">
-                {/* Background: subtle grid + gradient blobs */}
+                {/* Background: grid pattern + gradient blobs */}
                 <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-20 mix-blend-soft-light"
+                    className="pointer-events-none absolute inset-0 opacity-15 mix-blend-soft-light"
                     style={{
                         backgroundImage:
                             "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
                     }}
                 />
-                <div className="absolute -top-16 left-10 h-72 w-72 animate-pulse rounded-full bg-indigo-500/20 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-purple-500/20 blur-3xl" />
+                <div className="absolute -top-16 left-10 h-72 w-72 animate-pulse rounded-full bg-primary/30 blur-3xl" />
+                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-accent/20 blur-3xl" />
 
                 {/* Header */}
                 <motion.div
@@ -61,12 +62,14 @@ const HelpCenterPage = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20"
+                            className="rounded-full bg-background/20 backdrop-blur-md hover:bg-background/30"
                         >
-                            <ArrowLeft className="h-5 w-5 text-white" />
+                            <ArrowLeft className="h-5 w-5 text-foreground" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-white">Pusat Bantuan</h1>
+                    <h1 className="text-lg font-semibold text-foreground">
+                        Pusat Bantuan
+                    </h1>
                 </motion.div>
 
                 {/* Search */}
@@ -76,14 +79,14 @@ const HelpCenterPage = () => {
                     transition={{ duration: 0.5 }}
                     className="relative mb-8"
                 >
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/50" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
                         placeholder="Cari bantuan..."
-                        className="pl-10 rounded-2xl border-white/20 bg-white/10 text-white placeholder:text-white/40 backdrop-blur-md focus-visible:ring-2 focus-visible:ring-indigo-400"
+                        className="pl-10 rounded-2xl border-border/40 bg-background/20 text-foreground placeholder:text-muted-foreground backdrop-blur-md focus-visible:ring-2 focus-visible:ring-primary/40"
                     />
                 </motion.div>
 
-                {/* FAQ */}
+                {/* FAQ Section */}
                 <motion.section
                     initial="hidden"
                     animate="show"
@@ -93,7 +96,7 @@ const HelpCenterPage = () => {
                     }}
                     className="space-y-3"
                 >
-                    <h2 className="mb-2 text-base font-semibold text-white/80">
+                    <h2 className="mb-2 text-base font-semibold text-muted-foreground">
                         Pertanyaan Umum
                     </h2>
                     {faqItems.map((item, i) => (
@@ -103,12 +106,12 @@ const HelpCenterPage = () => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.4, delay: i * 0.1 }}
                         >
-                            <details className="group rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl transition hover:bg-white/10">
-                                <summary className="flex cursor-pointer items-center justify-between font-medium text-white/90">
+                            <details className="group rounded-2xl border border-border/30 bg-background/10 p-4 backdrop-blur-xl transition hover:bg-background/20">
+                                <summary className="flex cursor-pointer items-center justify-between font-medium text-foreground">
                                     {item.q}
-                                    <ChevronRight className="h-5 w-5 text-white/50 transition-transform group-open:rotate-90" />
+                                    <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-open:rotate-90" />
                                 </summary>
-                                <p className="mt-2 text-sm text-white/70">{item.a}</p>
+                                <p className="mt-2 text-sm text-muted-foreground">{item.a}</p>
                             </details>
                         </motion.div>
                     ))}
@@ -119,15 +122,15 @@ const HelpCenterPage = () => {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-2xl"
+                    className="mt-8 rounded-3xl border border-border/30 bg-background/10 p-6 text-center backdrop-blur-2xl"
                 >
-                    <h3 className="text-base font-semibold text-white">
+                    <h3 className="text-base font-semibold text-foreground">
                         Tidak menemukan jawaban?
                     </h3>
-                    <p className="my-2 text-sm text-white/70">
+                    <p className="my-2 text-sm text-muted-foreground">
                         Hubungi tim support kami untuk bantuan.
                     </p>
-                    <Button className="mt-2 rounded-2xl bg-white px-6 font-semibold text-gray-900 hover:bg-gray-100">
+                    <Button className="mt-2 rounded-2xl bg-primary px-6 font-semibold text-primary-foreground hover:bg-primary/90">
                         Hubungi Support
                     </Button>
                 </motion.div>

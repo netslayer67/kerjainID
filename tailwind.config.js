@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-    darkMode: ['class'],
+    darkMode: ['class'], // toggle via .dark
     content: [
         './pages/**/*.{js,jsx}',
         './components/**/*.{js,jsx}',
@@ -18,11 +18,14 @@ module.exports = {
         extend: {
             colors: {
                 'deep-indigo': '#090040',
+                'broken-white': '#f8f8f8',
+
                 border: 'hsl(var(--border))',
                 input: 'hsl(var(--input))',
                 ring: 'hsl(var(--ring))',
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',
+
                 primary: {
                     DEFAULT: 'hsl(var(--primary))',
                     foreground: 'hsl(var(--primary-foreground))',
@@ -70,7 +73,7 @@ module.exports = {
                     from: { height: 'var(--radix-accordion-content-height)' },
                     to: { height: 0 },
                 },
-                'shimmer': {
+                shimmer: {
                     '100%': {
                         transform: 'translateX(100%)',
                     },
@@ -79,10 +82,7 @@ module.exports = {
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
-                'shimmer': 'shimmer 1.5s infinite',
-            },
-            backdropFilter: {
-                'blur-lg': 'blur(16px)',
+                shimmer: 'shimmer 1.5s infinite',
             },
         },
     },

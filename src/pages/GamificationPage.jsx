@@ -34,14 +34,14 @@ const GamificationPage = () => {
                 {/* Background Effects */}
                 <div
                     aria-hidden
-                    className="absolute inset-0 pointer-events-none opacity-20 mix-blend-soft-light"
+                    className="absolute inset-0 pointer-events-none opacity-[0.08]"
                     style={{
                         backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 48px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 48px)",
+                            "repeating-linear-gradient(to_right, hsl(var(--muted-foreground)/.15) 0 1px, transparent 1px 48px), repeating-linear-gradient(to_bottom, hsl(var(--muted-foreground)/.15) 0 1px, transparent 1px 48px)",
                     }}
                 />
-                <div className="absolute -top-16 left-10 h-72 w-72 rounded-full bg-purple-500/20 blur-3xl animate-pulse" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-500/20 blur-3xl animate-pulse" />
+                <div className="absolute -top-16 left-10 h-72 w-72 rounded-full bg-primary/25 blur-3xl animate-pulse" />
+                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl animate-pulse" />
 
                 {/* Header */}
                 <motion.div
@@ -54,32 +54,32 @@ const GamificationPage = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20"
+                            className="rounded-full bg-card/50 backdrop-blur-md hover:bg-card/70"
                         >
-                            <ArrowLeft className="h-5 w-5 text-white" />
+                            <ArrowLeft className="h-5 w-5 text-foreground" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-white">Level & Lencana</h1>
+                    <h1 className="text-lg font-semibold text-foreground">Level & Lencana</h1>
                 </motion.div>
 
                 {/* Level Card */}
-                <Card className="relative z-10 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-lg">
+                <Card className="relative z-10 rounded-3xl border border-border bg-card/50 backdrop-blur-xl shadow-lg">
                     <CardContent className="space-y-5 p-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-white">Level {userLevel}</h2>
-                            <p className="text-sm text-white/70">
+                            <h2 className="text-xl font-bold text-foreground">Level {userLevel}</h2>
+                            <p className="text-sm text-muted-foreground">
                                 {userXP} / {xpToNextLevel} XP
                             </p>
                         </div>
-                        <div className="relative w-full h-4 rounded-full bg-white/10 overflow-hidden">
+                        <div className="relative w-full h-4 rounded-full bg-muted overflow-hidden">
                             <motion.div
-                                className="absolute top-0 left-0 h-4 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500"
+                                className="absolute top-0 left-0 h-4 rounded-full bg-gradient-to-r from-primary to-accent"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progress}%` }}
                                 transition={{ duration: 1, ease: "easeOut" }}
                             />
                         </div>
-                        <p className="text-center text-sm text-white/70">
+                        <p className="text-center text-sm text-muted-foreground">
                             Selesaikan pekerjaan untuk naik level 🚀
                         </p>
                     </CardContent>
@@ -91,7 +91,7 @@ const GamificationPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
                 >
-                    <h2 className="mb-4 text-lg font-semibold text-white">Lencana Saya</h2>
+                    <h2 className="mb-4 text-lg font-semibold text-foreground">Lencana Saya</h2>
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                         {badges.map((badge, index) => (
                             <motion.div
@@ -102,22 +102,22 @@ const GamificationPage = () => {
                             >
                                 <Card
                                     className={`rounded-2xl border transition-all backdrop-blur-lg ${badge.earned
-                                            ? "bg-white/10 border-purple-400/50 shadow-md"
-                                            : "bg-black/20 border-white/10 opacity-60"
+                                            ? "bg-card/60 border-primary/40 shadow-md"
+                                            : "bg-muted/40 border-border opacity-60"
                                         }`}
                                 >
                                     <CardContent className="p-5 text-center space-y-2">
                                         <badge.icon
-                                            className={`mx-auto h-10 w-10 ${badge.earned ? "text-yellow-400" : "text-white/30"
+                                            className={`mx-auto h-10 w-10 ${badge.earned ? "text-yellow-400" : "text-muted-foreground"
                                                 }`}
                                         />
                                         <p
-                                            className={`font-medium ${badge.earned ? "text-white" : "text-white/50"
+                                            className={`font-medium ${badge.earned ? "text-foreground" : "text-muted-foreground"
                                                 }`}
                                         >
                                             {badge.name}
                                         </p>
-                                        <p className="text-xs text-white/60">{badge.desc}</p>
+                                        <p className="text-xs text-muted-foreground">{badge.desc}</p>
                                     </CardContent>
                                 </Card>
                             </motion.div>

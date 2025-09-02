@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet';
 
 import AppLayout from '@/components/Layout/AppLayout';
 import PageLoader from '@/components/PageLoader';
+import ThemeToggle from "@/components/ThemeToggle";
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
@@ -63,6 +64,7 @@ function App() {
                         </Route>
                     </Routes>
                 </Suspense>
+                <ThemeToggle />
             </AnimatePresence>
         </>
     );

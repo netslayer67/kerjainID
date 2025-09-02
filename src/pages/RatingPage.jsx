@@ -35,24 +35,23 @@ const RatingPage = () => {
         <AnimatedPage>
             <Helmet>
                 <title>Beri Rating — Kerjain</title>
-                <meta
-                    name="description"
-                    content="Berikan rating dan ulasan untuk pekerjaan yang telah selesai di Kerjain."
-                />
             </Helmet>
 
-            <div className="relative min-h-dvh w-full overflow-hidden px-4 py-6">
-                {/* Background: grid + blur blobs */}
+            <div className="relative min-h-dvh w-full overflow-hidden px-4 py-6 md:px-6">
+                {/* Grid background */}
+                {/* Subtle grid background (theme-aware by opacity & token usage) */}
                 <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-20 mix-blend-soft-light"
+                    className="pointer-events-none absolute inset-0 -z-10 opacity-6"
                     style={{
                         backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
+                            "repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px), repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px)",
                     }}
                 />
-                <div className="absolute -top-20 left-10 h-72 w-72 animate-pulse rounded-full bg-purple-500/20 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-indigo-500/20 blur-3xl" />
+
+                {/* Gradient blobs */}
+                <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
+                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
 
                 {/* Header */}
                 <motion.div
@@ -65,12 +64,12 @@ const RatingPage = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20"
+                            className="rounded-full bg-background/30 backdrop-blur-md hover:bg-background/50"
                         >
-                            <ArrowLeft className="h-5 w-5 text-white" />
+                            <ArrowLeft className="h-5 w-5 text-foreground" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-white">Beri Ulasan</h1>
+                    <h1 className="text-lg font-semibold text-foreground">Beri Ulasan</h1>
                 </motion.div>
 
                 {/* Rating Card */}
@@ -79,18 +78,18 @@ const RatingPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <Card className="rounded-3xl border border-white/10 bg-white/5 shadow-xl backdrop-blur-2xl">
+                    <Card className="rounded-3xl border border-border/40 bg-background/40 shadow-2xl backdrop-blur-2xl">
                         <CardContent className="p-6 text-center space-y-6">
-                            <h2 className="text-lg font-semibold text-white">
+                            <h2 className="text-lg font-semibold text-foreground">
                                 Bagaimana kinerja{" "}
-                                <span className="text-purple-300">Budi Santoso</span>?
+                                <span className="text-primary font-bold">Budi Santoso</span>?
                             </h2>
-                            <p className="text-sm text-white/60">
+                            <p className="text-sm text-muted-foreground">
                                 Pekerjaan: Bersihkan Taman Belakang
                             </p>
 
                             {/* Stars */}
-                            <div className="flex justify-center gap-2">
+                            <div className="flex justify-center gap-3">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <motion.div
                                         key={star}
@@ -99,8 +98,8 @@ const RatingPage = () => {
                                     >
                                         <Star
                                             className={`h-10 w-10 cursor-pointer transition-colors ${(hoverRating || rating) >= star
-                                                    ? "text-yellow-400 fill-yellow-400"
-                                                    : "text-white/30"
+                                                ? "text-yellow-400 fill-yellow-400"
+                                                : "text-muted-foreground"
                                                 }`}
                                             onClick={() => setRating(star)}
                                             onMouseEnter={() => setHoverRating(star)}
@@ -115,13 +114,13 @@ const RatingPage = () => {
                                 <textarea
                                     placeholder="Tulis ulasan Anda (opsional)..."
                                     rows="4"
-                                    className="w-full rounded-2xl border border-white/20 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/60 backdrop-blur-sm"
+                                    className="w-full rounded-2xl border border-border/40 bg-background/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 backdrop-blur-sm"
                                 ></textarea>
 
                                 <Button
                                     type="submit"
                                     size="lg"
-                                    className="w-full rounded-2xl bg-white text-gray-900 font-semibold shadow hover:bg-gray-100 group"
+                                    className="w-full rounded-2xl bg-foreground text-background font-semibold shadow hover:bg-foreground/90 group"
                                 >
                                     Kirim Ulasan
                                     <Send className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />

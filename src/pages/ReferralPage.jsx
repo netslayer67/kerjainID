@@ -23,7 +23,6 @@ const ReferralPage = () => {
     };
 
     const triggerConfetti = () => {
-        // Basic confetti burst
         confetti({
             particleCount: 100,
             spread: 70,
@@ -46,18 +45,18 @@ const ReferralPage = () => {
                 />
             </Helmet>
 
-            <div className="relative min-h-dvh w-full px-4 py-6">
-                {/* Background grid + gradient blobs */}
+            <div className="relative min-h-dvh w-full px-4 py-6 md:px-6">
+                {/* Subtle grid background (theme-aware by opacity & token usage) */}
                 <div
                     aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-20 mix-blend-soft-light"
+                    className="pointer-events-none absolute inset-0 -z-10 opacity-6"
                     style={{
                         backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
+                            "repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px), repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px)",
                     }}
                 />
                 <div className="absolute -top-16 left-10 h-72 w-72 animate-pulse rounded-full bg-purple-500/20 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-indigo-500/20 blur-3xl" />
+                {/* <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-indigo-500/20 blur-3xl" /> */}
 
                 {/* Header */}
                 <motion.div
@@ -70,16 +69,18 @@ const ReferralPage = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20"
+                            className="rounded-full bg-background/30 backdrop-blur-md hover:bg-background/50"
                         >
-                            <ArrowLeft className="h-5 w-5 text-white" />
+                            <ArrowLeft className="h-5 w-5 text-foreground" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-white">Undang Teman</h1>
+                    <h1 className="text-lg font-semibold text-foreground">
+                        Undang Teman
+                    </h1>
                 </motion.div>
 
-                {/* Gift Card */}
-                <Card className="mb-6 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl">
+                {/* Gift / Bonus Card */}
+                <Card className="mb-6 rounded-3xl border border-border/40 bg-background/40 backdrop-blur-2xl shadow-xl">
                     <CardContent className="space-y-4 p-8 text-center">
                         <motion.div
                             initial={{ scale: 0 }}
@@ -91,44 +92,44 @@ const ReferralPage = () => {
                                 delay: 0.2,
                             }}
                         >
-                            <Gift className="mx-auto h-20 w-20 text-purple-300" />
+                            <Gift className="mx-auto h-20 w-20 text-primary" />
                         </motion.div>
-                        <h2 className="text-xl font-bold text-white">
+                        <h2 className="text-xl font-bold text-foreground">
                             Bonus Rp 25.000 🎉
                         </h2>
-                        <p className="mx-auto max-w-md text-sm text-white/70">
-                            Ajak teman bergabung. Anda dapat saldo saat mereka menyelesaikan
+                        <p className="mx-auto max-w-md text-sm text-muted-foreground">
+                            Ajak teman bergabung dan dapatkan saldo saat mereka menyelesaikan
                             pekerjaan pertamanya.
                         </p>
                     </CardContent>
                 </Card>
 
-                {/* Referral Code */}
+                {/* Referral Code Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
                     className="space-y-4 text-center"
                 >
-                    <p className="font-medium text-white/80">Kode Referral Anda</p>
+                    <p className="font-medium text-muted-foreground">Kode Referral Anda</p>
                     <div className="relative mx-auto max-w-sm">
                         <Input
                             readOnly
                             value={referralCode}
-                            className="rounded-2xl border-white/20 bg-white/10 text-center font-mono text-base tracking-widest text-white backdrop-blur-md"
+                            className="rounded-2xl border border-border/40 bg-background/30 text-center font-mono text-base tracking-widest text-foreground backdrop-blur-sm"
                         />
                         <Button
                             size="icon"
                             variant="ghost"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 hover:bg-white/20"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-background/40 hover:bg-background/60"
                             onClick={copyCode}
                         >
-                            <Copy className="h-5 w-5 text-white" />
+                            <Copy className="h-5 w-5 text-foreground" />
                         </Button>
                     </div>
                     <Button
                         onClick={triggerConfetti}
-                        className="mt-2 w-full rounded-2xl bg-white font-semibold text-gray-900 hover:bg-gray-100"
+                        className="mt-2 w-full rounded-2xl bg-foreground text-background font-semibold shadow hover:bg-foreground/90"
                     >
                         <Share2 className="mr-2 h-5 w-5" /> Bagikan Sekarang
                     </Button>
