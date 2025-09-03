@@ -56,21 +56,7 @@ export default function WalletPage() {
 
     return (
         <div className="relative min-h-screen bg-background text-foreground px-4 py-6 md:px-8">
-            {/* Background grid */}
-            <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-[0.07]"
-                style={{
-                    backgroundImage:
-                        "repeating-linear-gradient(to_right, hsl(var(--muted-foreground)/.15) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, hsl(var(--muted-foreground)/.15) 0 1px, transparent 1px 56px)",
-                }}
-            />
 
-            {/* Gradient blobs */}
-            <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
-            <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
-            <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
-            <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
 
             {/* Main Content */}
             <div className="relative mx-auto max-w-lg px-4 pb-24 pt-6">

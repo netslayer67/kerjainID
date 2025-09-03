@@ -46,17 +46,7 @@ const ReferralPage = () => {
             </Helmet>
 
             <div className="relative min-h-dvh w-full px-4 py-6 md:px-6">
-                {/* Subtle grid background (theme-aware by opacity & token usage) */}
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 -z-10 opacity-6"
-                    style={{
-                        backgroundImage:
-                            "repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px), repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px)",
-                    }}
-                />
-                <div className="absolute -top-16 left-10 h-72 w-72 animate-pulse rounded-full bg-purple-500/20 blur-3xl" />
-                {/* <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-indigo-500/20 blur-3xl" /> */}
+
 
                 {/* Header */}
                 <motion.div

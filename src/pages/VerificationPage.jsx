@@ -32,18 +32,7 @@ export default function VerificationPage() {
             </Helmet>
 
             <div className="relative flex min-h-screen items-center justify-center px-4">
-                {/* Subtle grid background */}
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-10"
-                    style={{
-                        backgroundImage:
-                            "repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 56px), repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 56px)",
-                    }}
-                />
-                {/* Soft blobs */}
-                <div className="absolute -top-20 -left-20 h-72 w-72 animate-blob rounded-full bg-primary/30 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-blob animation-delay-2000 rounded-full bg-secondary/20 blur-3xl" />
+
 
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}

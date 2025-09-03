@@ -31,17 +31,7 @@ const GamificationPage = () => {
             </Helmet>
 
             <div className="relative min-h-dvh w-full px-4 py-6 space-y-6">
-                {/* Background Effects */}
-                <div
-                    aria-hidden
-                    className="absolute inset-0 pointer-events-none opacity-[0.08]"
-                    style={{
-                        backgroundImage:
-                            "repeating-linear-gradient(to_right, hsl(var(--muted-foreground)/.15) 0 1px, transparent 1px 48px), repeating-linear-gradient(to_bottom, hsl(var(--muted-foreground)/.15) 0 1px, transparent 1px 48px)",
-                    }}
-                />
-                <div className="absolute -top-16 left-10 h-72 w-72 rounded-full bg-primary/25 blur-3xl animate-pulse" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl animate-pulse" />
+
 
                 {/* Header */}
                 <motion.div
@@ -102,8 +92,8 @@ const GamificationPage = () => {
                             >
                                 <Card
                                     className={`rounded-2xl border transition-all backdrop-blur-lg ${badge.earned
-                                            ? "bg-card/60 border-primary/40 shadow-md"
-                                            : "bg-muted/40 border-border opacity-60"
+                                        ? "bg-card/60 border-primary/40 shadow-md"
+                                        : "bg-muted/40 border-border opacity-60"
                                         }`}
                                 >
                                     <CardContent className="p-5 text-center space-y-2">

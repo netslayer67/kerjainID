@@ -34,18 +34,7 @@ export default function LoginPage() {
             </Helmet>
 
             <div className="relative flex min-h-screen items-center justify-center px-4">
-                {/* Grid pattern background */}
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-15"
-                    style={{
-                        backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
-                    }}
-                />
-                {/* Animated gradient blobs */}
-                <div className="absolute -top-24 -left-16 h-72 w-72 animate-pulse rounded-full bg-primary/30 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-accent/20 blur-3xl" />
+
 
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 30 }}

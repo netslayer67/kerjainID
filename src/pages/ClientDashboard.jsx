@@ -50,20 +50,8 @@ const ClientDashboard = () => {
                 <title>Dashboard Klien - Kerjain</title>
             </Helmet>
 
-            <div className="relative min-h-screen bg-background text-foreground px-4 py-6 md:px-8">
-                {/* Gradient blobs */}
-                <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
+            <div className="relative min-h-screen text-foreground px-4 py-6 md:px-8">
 
-                {/* Grid background */}
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 -z-10 opacity-6"
-                    style={{
-                        backgroundImage:
-                            "repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px), repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 56px)",
-                    }}
-                />
 
                 {/* Welcome Card */}
                 <motion.div
@@ -142,8 +130,8 @@ const ClientDashboard = () => {
                                                     </span>
                                                     <span
                                                         className={`w-fit rounded-full px-3 py-1 text-xs sm:text-sm font-medium ${job.status === "Dalam Pengerjaan"
-                                                                ? "bg-primary/20 text-primary"
-                                                                : "bg-accent/20 text-accent"
+                                                            ? "bg-primary/20 text-primary"
+                                                            : "bg-accent/20 text-accent"
                                                             }`}
                                                     >
                                                         {job.status}

@@ -21,18 +21,7 @@ const JobTrackingPage = () => {
             </Helmet>
 
             <div className="relative min-h-dvh w-full px-4 py-6 md:px-8">
-                {/* Grid pattern */}
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 -z-10 opacity-10"
-                    style={{
-                        backgroundImage:
-                            "repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 56px), repeating-linear-gradient(0deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 56px)",
-                    }}
-                />
-                {/* Gradient blobs */}
-                <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-pulse" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl animate-pulse" />
+
 
                 {/* Header */}
                 <motion.div

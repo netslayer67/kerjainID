@@ -30,20 +30,7 @@ const PostJobPage = () => {
             </Helmet>
 
             <div className="relative min-h-dvh px-4 py-6 md:px-8">
-                {/* Grid Pattern Background */}
-                <div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 opacity-20"
-                    style={{
-                        backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 56px)",
-                    }}
-                />
-                {/* Gradient blobs */}
-                <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
-                <div className="absolute -top-24 -left-16 h-72 w-72 animate-pulse rounded-full bg-primary/30 blur-3xl" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 animate-pulse rounded-full bg-secondary/20 blur-3xl" />
+
 
                 {/* Header */}
                 <motion.div

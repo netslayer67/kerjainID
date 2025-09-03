@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 
 import AppLayout from '@/components/Layout/AppLayout';
@@ -27,6 +27,7 @@ const NotificationPage = lazy(() => import('@/pages/NotificationPage'));
 
 function App() {
     const location = useLocation();
+    const prefersReducedMotion = useReducedMotion();
 
     return (
         <>
@@ -41,6 +42,30 @@ function App() {
             </Helmet>
             <AnimatePresence mode="wait">
                 <Suspense fallback={<PageLoader />}>
+                    {/* Grid overlay */}
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0"
+                        style={{
+                            backgroundImage:
+                                `repeating-linear-gradient(to right, hsl(var(--foreground)/0.06) 0 1px, transparent 1px 56px), repeating-linear-gradient(to bottom, hsl(var(--foreground)/0.06) 0 1px, transparent 1px 56px)`,
+                        }}
+                    />
+                    {/* Blobs (use design tokens) */}
+                    <motion.div
+                        aria-hidden
+                        initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
+                        animate={prefersReducedMotion ? {} : { opacity: 0.7, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-[hsl(var(--accent))]/30 blur-3xl"
+                    />
+                    <motion.div
+                        aria-hidden
+                        initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+                        animate={prefersReducedMotion ? {} : { opacity: 0.6, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.05 }}
+                        className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[hsl(var(--ring))]/25 blur-3xl"
+                    />
                     <Routes location={location} key={location.pathname}>
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/login" element={<LoginPage />} />

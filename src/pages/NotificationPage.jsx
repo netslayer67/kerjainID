@@ -63,17 +63,7 @@ const NotificationPage = () => {
             </Helmet>
 
             <div className="relative mx-auto max-w-lg px-4 pb-16 pt-6 space-y-6">
-                {/* Background grid & glow */}
-                <div
-                    aria-hidden
-                    className="absolute inset-0 opacity-20 pointer-events-none mix-blend-soft-light"
-                    style={{
-                        backgroundImage:
-                            "repeating-linear-gradient(to_right, rgba(255,255,255,0.05) 0 1px, transparent 1px 48px), repeating-linear-gradient(to_bottom, rgba(255,255,255,0.05) 0 1px, transparent 1px 48px)",
-                    }}
-                />
-                <div className="absolute -top-20 left-10 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-pulse" />
-                <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-secondary/20 blur-3xl animate-pulse" />
+
 
                 {/* Header */}
                 <motion.div
@@ -134,8 +124,8 @@ const NotificationPage = () => {
                                     >
                                         <Card
                                             className={`rounded-2xl border backdrop-blur-xl shadow-md transition-all ${notif.read
-                                                    ? "bg-card/30 border-border"
-                                                    : "bg-primary/10 border-primary/40"
+                                                ? "bg-card/30 border-border"
+                                                : "bg-primary/10 border-primary/40"
                                                 }`}
                                         >
                                             <CardContent className="flex items-start gap-4 p-4">
@@ -145,8 +135,8 @@ const NotificationPage = () => {
                                                 >
                                                     <Icon
                                                         className={`h-5 w-5 ${notif.read
-                                                                ? "text-muted-foreground"
-                                                                : "text-primary"
+                                                            ? "text-muted-foreground"
+                                                            : "text-primary"
                                                             }`}
                                                     />
                                                 </div>
