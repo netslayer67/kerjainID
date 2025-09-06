@@ -1,4 +1,3 @@
-// ChatPage.jsx
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -48,39 +47,48 @@ export default function ChatPage() {
                     initial={{ opacity: 0, y: -15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="z-10 flex items-center justify-between border-b border-border bg-card/50 px-4 py-3 backdrop-blur-xl"
+                    className="z-10 flex items-center justify-between border-b border-border bg-background/70 px-4 py-3 backdrop-blur-xl"
                 >
-                    <h1 className="text-lg font-semibold">Obrolan</h1>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                        <Search className="h-5 w-5 text-foreground" />
+                    <h1 className="text-lg font-semibold text-foreground">Obrolan</h1>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full hover:bg-accent/20 hover:text-accent transition-colors"
+                    >
+                        <Search className="h-5 w-5" />
                     </Button>
                 </motion.div>
 
                 {/* Chat List */}
-                <div className="flex-1 overflow-y-auto px-2 py-3 space-y-2">
-                    {chatList.map((chat) => (
+                <div className="flex-1 overflow-y-auto px-3 py-4 space-y-3">
+                    {chatList.map((chat, i) => (
                         <motion.div
                             key={chat.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
+                            transition={{ duration: 0.35, delay: i * 0.05 }}
                         >
                             <Link
                                 to={`/chat/${chat.id}`}
-                                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card/40 p-3 text-left shadow-sm backdrop-blur-md hover:bg-card/60 transition"
+                                className="flex w-full items-center gap-3 rounded-2xl border border-border/50 bg-card/60 p-3 text-left shadow-sm backdrop-blur-md transition-colors hover:border-accent/60 hover:bg-card/80"
                             >
-                                <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                                {/* Avatar */}
+                                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                                     {chat.initials}
                                     {chat.online && (
-                                        <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-card"></span>
+                                        <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-background"></span>
                                     )}
                                 </div>
+
+                                {/* Chat Info */}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between">
                                         <p className="truncate text-sm font-semibold text-foreground">
                                             {chat.name}
                                         </p>
-                                        <span className="text-xs text-muted-foreground">{chat.time}</span>
+                                        <span className="text-[11px] text-muted-foreground">
+                                            {chat.time}
+                                        </span>
                                     </div>
                                     <p className="truncate text-xs text-muted-foreground">
                                         {chat.lastMsg}

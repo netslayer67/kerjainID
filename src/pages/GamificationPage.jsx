@@ -30,9 +30,7 @@ const GamificationPage = () => {
                 />
             </Helmet>
 
-            <div className="relative min-h-dvh w-full px-4 py-6 space-y-6">
-
-
+            <div className="relative min-h-dvh w-full px-4 py-6 space-y-8">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -16 }}
@@ -44,31 +42,36 @@ const GamificationPage = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-card/50 backdrop-blur-md hover:bg-card/70"
+                            className="rounded-full bg-card/40 backdrop-blur-md ring-1 ring-border text-muted-foreground hover:text-accent-foreground hover:bg-accent/20 transition-all"
                         >
-                            <ArrowLeft className="h-5 w-5 text-foreground" />
+                            <ArrowLeft className="h-5 w-5" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-foreground">Level & Lencana</h1>
+                    <h1 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                        <span className="text-accent">★</span> Level & Lencana
+                    </h1>
                 </motion.div>
 
                 {/* Level Card */}
-                <Card className="relative z-10 rounded-3xl border border-border bg-card/50 backdrop-blur-xl shadow-lg">
-                    <CardContent className="space-y-5 p-6">
+                <Card className="rounded-3xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-xl">
+                    <CardContent className="space-y-6 p-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-foreground">Level {userLevel}</h2>
+                            <h2 className="text-2xl font-bold text-foreground">Level {userLevel}</h2>
                             <p className="text-sm text-muted-foreground">
                                 {userXP} / {xpToNextLevel} XP
                             </p>
                         </div>
+
+                        {/* Progress bar */}
                         <div className="relative w-full h-4 rounded-full bg-muted overflow-hidden">
                             <motion.div
-                                className="absolute top-0 left-0 h-4 rounded-full bg-gradient-to-r from-primary to-accent"
+                                className="absolute top-0 left-0 h-4 rounded-full bg-gradient-to-r from-primary via-accent to-secondary shadow-inner"
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progress}%` }}
                                 transition={{ duration: 1, ease: "easeOut" }}
                             />
                         </div>
+
                         <p className="text-center text-sm text-muted-foreground">
                             Selesaikan pekerjaan untuk naik level 🚀
                         </p>
@@ -86,19 +89,19 @@ const GamificationPage = () => {
                         {badges.map((badge, index) => (
                             <motion.div
                                 key={badge.name}
-                                initial={{ opacity: 0, scale: 0.8 }}
+                                initial={{ opacity: 0, scale: 0.85 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.4, delay: index * 0.1 }}
                             >
                                 <Card
-                                    className={`rounded-2xl border transition-all backdrop-blur-lg ${badge.earned
-                                        ? "bg-card/60 border-primary/40 shadow-md"
-                                        : "bg-muted/40 border-border opacity-60"
+                                    className={`rounded-2xl border backdrop-blur-lg transition-all duration-300 hover:scale-105 ${badge.earned
+                                            ? "bg-card/70 border-primary/40 shadow-md hover:shadow-lg"
+                                            : "bg-muted/40 border-border opacity-60"
                                         }`}
                                 >
-                                    <CardContent className="p-5 text-center space-y-2">
+                                    <CardContent className="p-5 text-center space-y-3">
                                         <badge.icon
-                                            className={`mx-auto h-10 w-10 ${badge.earned ? "text-yellow-400" : "text-muted-foreground"
+                                            className={`mx-auto h-10 w-10 transition-colors ${badge.earned ? "text-yellow-400" : "text-muted-foreground"
                                                 }`}
                                         />
                                         <p

@@ -14,7 +14,7 @@ import {
     ScanLine,
 } from "lucide-react";
 
-// --- Helpers
+/* --- Currency Formatter --- */
 const fmtIDR = (n) =>
     new Intl.NumberFormat("id-ID", {
         style: "currency",
@@ -48,20 +48,20 @@ export default function WalletPage() {
     }, [activeTab]);
 
     const fadeUp = {
-        hidden: { opacity: 0, y: reduceMotion ? 0 : 18 },
+        hidden: { opacity: 0, y: reduceMotion ? 0 : 20 },
         show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
     };
 
     return (
         <div className="relative min-h-screen text-foreground">
-            {/* floating blobs */}
+            {/* Background accents */}
             <motion.div
-                className="absolute top-20 left-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl"
-                animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.35, 0.5] }}
+                className="absolute top-24 left-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl"
+                animate={{ scale: [1, 1.1, 1], opacity: [0.45, 0.3, 0.45] }}
                 transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
             />
             <motion.div
-                className="absolute bottom-32 right-6 h-44 w-44 rounded-full bg-secondary/20 blur-3xl"
+                className="absolute bottom-32 right-8 h-44 w-44 rounded-full bg-accent/20 blur-3xl"
                 animate={{ scale: [1, 1.15, 1], opacity: [0.45, 0.3, 0.45] }}
                 transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
             />
@@ -72,17 +72,17 @@ export default function WalletPage() {
                 <div className="mb-6 flex items-center gap-3">
                     <Link
                         to={-1}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card/40 backdrop-blur-md ring-1 ring-border hover:bg-card transition"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card/40 backdrop-blur-md ring-1 ring-border text-muted-foreground hover:text-accent-foreground hover:bg-accent transition-colors"
                     >
-                        <ArrowLeft className="h-5 w-5 text-foreground" />
+                        <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <div className="flex items-center gap-2">
-                        <Wallet className="h-5 w-5 text-muted-foreground" />
+                        <Wallet className="h-5 w-5 text-accent" />
                         <h1 className="text-lg font-semibold">Dompet</h1>
                     </div>
                 </div>
 
-                {/* Balance */}
+                {/* Balance Card */}
                 <motion.div variants={fadeUp} initial="hidden" animate="show">
                     <BalanceCard
                         isLoading={isLoading}
@@ -97,10 +97,10 @@ export default function WalletPage() {
                     <QuickActions />
                 </motion.div>
 
-                {/* Tabs & Transactions */}
+                {/* Tabs & Transaction History */}
                 <motion.div variants={fadeUp} initial="hidden" animate="show" className="mt-7 space-y-4">
                     {/* Tabs */}
-                    <div className="inline-flex w-full justify-center rounded-2xl bg-card/40 p-1 backdrop-blur-md ring-1 ring-border">
+                    <div className="inline-flex w-full justify-center rounded-2xl bg-card/50 p-1 backdrop-blur-md ring-1 ring-border">
                         {[
                             { key: "semua", label: "Semua" },
                             { key: "masuk", label: "Masuk" },
@@ -109,9 +109,9 @@ export default function WalletPage() {
                             <button
                                 key={t.key}
                                 onClick={() => setActiveTab(t.key)}
-                                className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === t.key
-                                    ? "bg-card text-foreground"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-card/40"
+                                className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${activeTab === t.key
+                                        ? "bg-accent text-accent-foreground shadow-sm"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-card/40"
                                     }`}
                             >
                                 {t.label}
@@ -122,8 +122,8 @@ export default function WalletPage() {
                     {/* Transaction History */}
                     <CardWrapper>
                         <div className="flex items-center gap-2 pb-3">
-                            <Receipt className="h-5 w-5 text-muted-foreground" />
-                            <h2 className="text-base font-semibold">Riwayat</h2>
+                            <Receipt className="h-5 w-5 text-accent" />
+                            <h2 className="text-base font-semibold">Riwayat Transaksi</h2>
                         </div>
                         <div className="divide-y divide-border">
                             <AnimatePresence initial={false}>
@@ -139,11 +139,10 @@ export default function WalletPage() {
     );
 }
 
-// ---------------- Subcomponents ----------------
-
+/* --- Subcomponents --- */
 function CardWrapper({ children }) {
     return (
-        <div className="rounded-3xl border border-border bg-card/50 p-5 backdrop-blur-xl shadow-xl">
+        <div className="rounded-3xl border border-border bg-card/60 p-5 backdrop-blur-xl shadow-lg">
             {children}
         </div>
     );
@@ -151,17 +150,17 @@ function CardWrapper({ children }) {
 
 function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
     return (
-        <div className="overflow-hidden rounded-3xl border border-border bg-card/60 p-6 backdrop-blur-2xl shadow-2xl">
+        <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/90 to-primary shadow-xl p-6 text-primary-foreground">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                {/* Saldo */}
+                {/* Balance */}
                 <div>
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Saldo</p>
+                    <p className="text-xs uppercase tracking-wide opacity-80">Saldo</p>
                     {isLoading ? (
-                        <div className="mt-2 h-8 w-40 animate-pulse rounded-lg bg-muted/40" />
+                        <div className="mt-2 h-8 w-40 animate-pulse rounded-lg bg-primary-foreground/30" />
                     ) : (
                         <div className="mt-1 flex items-end gap-2">
-                            <h2 className="text-2xl font-semibold">{fmtIDR(balance)}</h2>
-                            <span className="mb-1 text-xs text-muted-foreground">tersedia</span>
+                            <h2 className="text-2xl font-bold">{fmtIDR(balance)}</h2>
+                            <span className="mb-1 text-xs opacity-90">tersedia</span>
                         </div>
                     )}
                 </div>
@@ -170,13 +169,13 @@ function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                     <button
                         onClick={onTopUp}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow hover:bg-primary/90"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground shadow hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
                         <Plus className="h-4 w-4" /> Top Up
                     </button>
                     <button
                         onClick={onWithdraw}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-foreground ring-1 ring-inset ring-border hover:bg-card/50"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-primary-foreground ring-1 ring-inset ring-primary-foreground/40 hover:bg-accent hover:text-accent-foreground transition-colors"
                     >
                         <Download className="h-4 w-4" /> Tarik
                     </button>
@@ -191,7 +190,6 @@ function QuickActions() {
         { icon: <Shuffle className="h-5 w-5" />, title: "Transfer", desc: "Kirim cepat", onClick: () => alert("Transfer") },
         { icon: <ScanLine className="h-5 w-5" />, title: "Scan & Pay", desc: "Bayar QR", onClick: () => alert("Scan & Pay") },
     ];
-
     return (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {actions.map((a, i) => (
@@ -200,15 +198,15 @@ function QuickActions() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={a.onClick}
-                    className="group flex items-center gap-4 rounded-3xl border border-border bg-card/50 p-5 text-left backdrop-blur-xl hover:bg-card/60 transition"
+                    className="group flex items-center gap-4 rounded-3xl border border-border bg-card/50 p-5 text-left backdrop-blur-xl hover:bg-accent/20 transition-colors"
                 >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-muted text-foreground">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary/30 text-secondary-foreground">
                         {a.icon}
                     </div>
                     <div className="flex-1">
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold">{a.title}</span>
-                            <span className="opacity-0 transition group-hover:opacity-100">→</span>
+                            <span className="opacity-0 transition-opacity group-hover:opacity-100 text-accent">→</span>
                         </div>
                         <p className="text-xs text-muted-foreground">{a.desc}</p>
                     </div>
@@ -231,19 +229,17 @@ function TransactionItem({ tx }) {
         >
             <div className="flex items-center gap-4">
                 <div
-                    className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isIn ? "bg-emerald-400/15 text-emerald-300" : "bg-rose-400/15 text-rose-300"
+                    className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isIn ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
                         }`}
                 >
                     {isIn ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
                 </div>
                 <div>
                     <p className="text-sm font-medium">{tx.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                        {new Date(tx.date).toLocaleDateString("id-ID")}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{new Date(tx.date).toLocaleDateString("id-ID")}</p>
                 </div>
             </div>
-            <p className={`text-sm font-semibold ${isIn ? "text-emerald-300" : "text-rose-300"}`}>
+            <p className={`text-sm font-semibold ${isIn ? "text-emerald-400" : "text-rose-400"}`}>
                 {isIn ? "+" : "-"} {fmtIDR(tx.amount)}
             </p>
         </motion.div>

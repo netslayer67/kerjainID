@@ -1,8 +1,14 @@
 // HelpCenterPage.jsx
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Search, ChevronRight } from "lucide-react";
+import {
+    ArrowLeft,
+    Search,
+    ChevronRight,
+    MessageCircle,
+    Mail,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import AnimatedPage from "@/components/AnimatedPage";
@@ -11,68 +17,72 @@ import { Helmet } from "react-helmet";
 const faqItems = [
     {
         q: "Bagaimana cara kerja auto-matching?",
-        a: "Sistem otomatis mencocokkan pekerjaan dengan pekerja terdekat & sesuai kualifikasi.",
+        a: "Sistem otomatis mencocokkan pekerjaan dengan pekerja terdekat dan sesuai kualifikasi.",
     },
     {
         q: "Bagaimana sistem komisi?",
-        a: "Komisi 11% dipotong dari total bayaran setiap pekerjaan selesai.",
+        a: "Komisi 11% dipotong dari total bayaran setiap pekerjaan yang selesai.",
     },
     {
         q: "Apakah pembayaran tunai aman?",
-        a: "Aman, transaksi tetap tercatat. Tekan tombol 'Selesai' setelah pembayaran.",
+        a: "Ya, aman. Semua transaksi tercatat. Tekan tombol 'Selesai' setelah pembayaran.",
     },
     {
         q: "Bagaimana jika ada masalah?",
-        a: "Ajukan sengketa lewat 'Laporkan Masalah'. Tim kami akan bantu.",
+        a: "Gunakan menu 'Laporkan Masalah'. Tim kami akan segera membantu Anda.",
     },
 ];
 
 const HelpCenterPage = () => {
+    const [search, setSearch] = useState("");
+
+    const filteredFaq = faqItems.filter((f) =>
+        f.q.toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
         <AnimatedPage>
             <Helmet>
                 <title>Pusat Bantuan — Kerjain</title>
                 <meta
                     name="description"
-                    content="Temukan jawaban atas pertanyaan umum tentang Kerjain di pusat bantuan."
+                    content="Temukan jawaban atas pertanyaan umum, hubungi support, atau gunakan live chat di pusat bantuan Kerjain."
                 />
             </Helmet>
 
-            <div className="relative min-h-dvh w-full px-4 py-6">
-
-
+            <div className="relative min-h-dvh w-full px-4 py-8 space-y-8">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="mb-6 flex items-center gap-3"
+                    className="flex items-center gap-3"
                 >
                     <Link to={-1}>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-background/20 backdrop-blur-md hover:bg-background/30"
+                            className="rounded-full bg-background/40 backdrop-blur-md hover:bg-accent/20 hover:text-accent transition"
                         >
-                            <ArrowLeft className="h-5 w-5 text-foreground" />
+                            <ArrowLeft className="h-5 w-5" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-foreground">
-                        Pusat Bantuan
-                    </h1>
+                    <h1 className="text-xl font-semibold text-foreground">Pusat Bantuan</h1>
                 </motion.div>
 
                 {/* Search */}
                 <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="relative mb-8"
+                    transition={{ duration: 0.4 }}
+                    className="relative"
                 >
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Cari bantuan..."
-                        className="pl-10 rounded-2xl border-border/40 bg-background/20 text-foreground placeholder:text-muted-foreground backdrop-blur-md focus-visible:ring-2 focus-visible:ring-primary/40"
+                        placeholder="Cari pertanyaan atau topik..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-10 rounded-2xl border-border/50 bg-background/40 text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent/40 transition"
                     />
                 </motion.div>
 
@@ -84,45 +94,58 @@ const HelpCenterPage = () => {
                         hidden: {},
                         show: { transition: { staggerChildren: 0.08 } },
                     }}
-                    className="space-y-3"
+                    className="space-y-4"
                 >
-                    <h2 className="mb-2 text-base font-semibold text-muted-foreground">
-                        Pertanyaan Umum
-                    </h2>
-                    {faqItems.map((item, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: i * 0.1 }}
-                        >
-                            <details className="group rounded-2xl border border-border/30 bg-background/10 p-4 backdrop-blur-xl transition hover:bg-background/20">
-                                <summary className="flex cursor-pointer items-center justify-between font-medium text-foreground">
-                                    {item.q}
-                                    <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-open:rotate-90" />
-                                </summary>
-                                <p className="mt-2 text-xs text-muted-foreground">{item.a}</p>
-                            </details>
-                        </motion.div>
-                    ))}
+                    <h2 className="text-lg font-semibold text-foreground">FAQ</h2>
+                    {filteredFaq.length > 0 ? (
+                        filteredFaq.map((item, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, y: 12 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.35, delay: i * 0.05 }}
+                            >
+                                <details className="group rounded-2xl border border-border/50 bg-card/50 p-4 shadow-sm backdrop-blur-lg transition hover:shadow-md">
+                                    <summary className="flex cursor-pointer items-center justify-between font-medium text-foreground hover:text-accent transition-colors">
+                                        {item.q}
+                                        <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-open:rotate-90" />
+                                    </summary>
+                                    <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                                        {item.a}
+                                    </p>
+                                </details>
+                            </motion.div>
+                        ))
+                    ) : (
+                        <p className="text-sm text-muted-foreground">Tidak ada hasil ditemukan.</p>
+                    )}
                 </motion.section>
 
-                {/* Contact Support */}
+                {/* Contact / Support */}
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="mt-8 rounded-3xl border border-border/30 bg-background/10 p-6 text-center backdrop-blur-2xl"
+                    className="rounded-3xl border border-border/50 bg-card/60 p-6 text-center shadow-md backdrop-blur-xl space-y-3"
                 >
-                    <h3 className="text-base font-semibold text-foreground">
-                        Tidak menemukan jawaban?
-                    </h3>
-                    <p className="my-2 text-sm text-muted-foreground">
-                        Hubungi tim support kami untuk bantuan.
+                    <h3 className="text-lg font-semibold text-foreground">Butuh bantuan lebih?</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Hubungi tim support kami atau gunakan live chat.
                     </p>
-                    <Button className="mt-2 rounded-2xl bg-primary px-6 font-semibold text-primary-foreground hover:bg-primary/90">
-                        Hubungi Support
-                    </Button>
+
+                    <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+                        <Button className="flex items-center gap-2 rounded-2xl bg-primary text-primary-foreground hover:bg-primary/90 transition">
+                            <MessageCircle className="h-4 w-4" />
+                            Live Chat
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="flex items-center gap-2 rounded-2xl border-accent/50 text-foreground hover:border-accent hover:text-accent hover:bg-accent/10 transition"
+                        >
+                            <Mail className="h-4 w-4" />
+                            Email Support
+                        </Button>
+                    </div>
                 </motion.div>
             </div>
         </AnimatedPage>

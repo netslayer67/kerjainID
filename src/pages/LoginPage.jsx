@@ -122,7 +122,7 @@ export default function LoginPage() {
                         <p className="mt-6 text-center text-sm text-muted-foreground">
                             Belum punya akun?{" "}
                             <Link
-                                to="/verify"
+                                to="/register"
                                 className="font-semibold text-primary hover:underline"
                             >
                                 Daftar

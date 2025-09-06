@@ -4,9 +4,7 @@ import { motion } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
 
 export default function ThemeToggle() {
-    const [theme, setTheme] = useState(
-        localStorage.getItem("theme") || "light"
-    );
+    const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
     useEffect(() => {
         if (theme === "dark") {
@@ -19,10 +17,10 @@ export default function ThemeToggle() {
 
     return (
         <motion.div
-            className="fixed bottom-16 right-6 z-50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
+            className="relative"
         >
             {/* blob background */}
             <motion.div

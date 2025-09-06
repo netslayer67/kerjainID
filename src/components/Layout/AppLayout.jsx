@@ -8,36 +8,57 @@ const navItems = [
     { path: '/post-job', icon: Briefcase, label: 'Pekerjaan' },
     { path: '/wallet', icon: Wallet, label: 'Dompet' },
     { path: '/chat', icon: MessageSquare, label: 'Obrolan' },
-    { path: '/profile', icon: User, label: 'Profil' },
+    // { path: '/profile', icon: User, label: 'Profil' },
 ];
 
 const AppLayout = () => {
     const location = useLocation();
-
     const isWorker = location.pathname.startsWith('/worker');
-    const adjustedNavItems = navItems.map(item => {
-        if (item.path === '/client/dashboard' && isWorker) {
-            return { ...item, path: '/worker/dashboard' };
-        }
-        return item;
-    });
+
+    const adjustedNavItems = navItems.map((item) =>
+        item.path === '/client/dashboard' && isWorker
+            ? { ...item, path: '/worker/dashboard' }
+            : item
+    );
 
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col">
+            {/* ======= HEADER / TOP NAV ======= */}
             <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
                     <Link
-                        to={isWorker ? "/worker/dashboard" : "/client/dashboard"}
-                        className="text-2xl font-bold tracking-tighter"
+                        to={isWorker ? '/worker/dashboard' : '/client/dashboard'}
+                        className="text-2xl font-bold tracking-tight text-primary hover:text-accent transition-colors"
                     >
                         Kerjain
                     </Link>
+
+                    <div className="hidden md:flex items-center gap-6">
+                        {adjustedNavItems.map((item) => (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname.startsWith(item.path)
+                                    ? 'bg-primary text-accent-foreground'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
+                                    }`}
+                            >
+                                <item.icon className="h-5 w-5" />
+                                {item.label}
+                            </Link>
+                        ))}
+                    </div>
+
                     <div className="flex items-center gap-4">
-                        <Link to="/notifications">
-                            <Bell className="h-6 w-6 text-muted-foreground hover:text-foreground transition-colors" />
+                        <Link
+                            to="/notifications"
+                            className="relative p-2 rounded-full hover:bg-secondary/30 transition-colors"
+                        >
+                            <Bell className="h-6 w-6 text-muted-foreground hover:text-accent transition-colors" />
+                            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-primary"></span>
                         </Link>
                         <Link to="/profile">
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold text-primary-foreground">
+                            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center font-bold text-primary-foreground hover:opacity-90 transition">
                                 U
                             </div>
                         </Link>
@@ -45,41 +66,42 @@ const AppLayout = () => {
                 </div>
             </header>
 
-            <main className="flex-grow container mx-auto px-4 py-8">
+            {/* ======= MAIN ======= */}
+            <main className="flex-grow container mx-auto px-4 py-6 md:py-10">
                 <Outlet />
             </main>
 
-            <footer className="sticky bottom-0 z-40 mt-auto">
-                <div className="md:hidden p-2">
-                    <nav className="bg-muted/50 backdrop-blur-lg border border-border rounded-2xl px-4 py-2">
-                        <ul className="flex justify-around items-center">
-                            {adjustedNavItems.map((item) => (
+            {/* ======= MOBILE BOTTOM NAV ======= */}
+            <footer className="sticky bottom-0 z-40 md:hidden">
+                <nav className="mx-2 mb-2 bg-muted/60 backdrop-blur-xl border border-border rounded-2xl px-4 py-2 shadow-sm">
+                    <ul className="flex justify-around items-center">
+                        {adjustedNavItems.map((item) => {
+                            const active = location.pathname.startsWith(item.path);
+                            return (
                                 <li key={item.path}>
                                     <Link
                                         to={item.path}
-                                        className="flex flex-col items-center gap-1 p-2 rounded-lg"
+                                        className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors ${active
+                                            ? 'text-accent'
+                                            : 'text-muted-foreground hover:text-foreground hover:bg-secondary/30'
+                                            }`}
                                     >
-                                        <item.icon
-                                            className={`h-6 w-6 transition-colors ${location.pathname.startsWith(item.path)
-                                                ? "text-foreground"
-                                                : "text-muted-foreground"
-                                                }`}
-                                        />
-                                        {location.pathname.startsWith(item.path) && (
+                                        <item.icon className="text-primary h-6 w-6" />
+                                        {/* <span className="text-[11px] font-medium">{item.label}</span> */}
+                                        {active && (
                                             <motion.div
                                                 layoutId="active-nav-indicator"
-                                                className="h-1 w-1 bg-foreground rounded-full"
+                                                className="h-1.5 w-1.5 bg-primary rounded-full mt-1"
                                             />
                                         )}
                                     </Link>
                                 </li>
-                            ))}
-                        </ul>
-                    </nav>
-                </div>
+                            );
+                        })}
+                    </ul>
+                </nav>
             </footer>
         </div>
-
     );
 };
 

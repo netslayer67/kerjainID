@@ -17,7 +17,7 @@ const DisputePage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         toast({
-            title: "Laporan Terkirim",
+            title: "Laporan terkirim",
             description: "Tim kami akan meninjau laporan Anda dalam 1x24 jam.",
         });
         setTimeout(() => navigate(-1), 2000);
@@ -34,8 +34,6 @@ const DisputePage = () => {
             </Helmet>
 
             <div className="relative min-h-dvh w-full px-4 py-6">
-
-
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -16 }}
@@ -47,13 +45,13 @@ const DisputePage = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-background/30 backdrop-blur-md hover:bg-background/40"
+                            className="rounded-full bg-card/40 backdrop-blur-md ring-1 ring-border text-muted-foreground hover:text-accent-foreground hover:bg-accent/20 transition-all"
                         >
-                            <ArrowLeft className="h-5 w-5 text-foreground" />
+                            <ArrowLeft className="h-5 w-5" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-foreground">
-                        Laporkan Masalah
+                    <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                        <span className="text-accent">⚑</span> Laporkan Masalah
                     </h1>
                 </motion.div>
 
@@ -63,17 +61,15 @@ const DisputePage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <Card className="rounded-3xl border border-border/40 bg-background/40 shadow-xl backdrop-blur-2xl">
+                    <Card className="rounded-3xl border border-border/40 bg-card/50 shadow-xl backdrop-blur-xl">
                         <CardContent className="p-6 space-y-6">
                             {/* Warning Banner */}
                             <div className="flex items-start gap-4 rounded-xl border border-destructive/40 bg-destructive/10 p-4">
                                 <AlertTriangle className="h-6 w-6 text-destructive mt-1" />
                                 <div>
-                                    <h3 className="font-semibold text-destructive">
-                                        Penting
-                                    </h3>
+                                    <h3 className="font-semibold text-destructive">Penting</h3>
                                     <p className="text-sm text-muted-foreground">
-                                        Jelaskan masalah Anda sedetail mungkin & lampirkan bukti.
+                                        Mohon jelaskan masalah Anda sedetail mungkin & lampirkan bukti agar dapat kami proses dengan cepat.
                                     </p>
                                 </div>
                             </div>
@@ -92,8 +88,8 @@ const DisputePage = () => {
                                     <textarea
                                         rows="5"
                                         required
-                                        className="mt-1 w-full rounded-2xl border border-border/40 bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 backdrop-blur-sm"
-                                        placeholder="Contoh: Pekerja tidak menyelesaikan tugas..."
+                                        className="mt-1 w-full rounded-2xl border border-border/40 bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 backdrop-blur-sm transition"
+                                        placeholder="Contoh: Pekerja tidak menyelesaikan tugas sesuai kesepakatan..."
                                     ></textarea>
                                 </div>
 
@@ -101,14 +97,14 @@ const DisputePage = () => {
                                     <Label className="text-muted-foreground">Lampiran Bukti</Label>
                                     <Input
                                         type="file"
-                                        className="mt-1 rounded-2xl border-border/40 bg-background/40 text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-primary/20 file:px-3 file:py-1 file:text-sm file:font-semibold file:text-foreground hover:file:bg-primary/30"
+                                        className="mt-1 rounded-2xl border-border/40 bg-background/40 text-foreground file:mr-4 file:rounded-md file:border-0 file:bg-secondary/20 file:px-3 file:py-1 file:text-sm file:font-semibold file:text-foreground hover:file:bg-secondary/30 transition"
                                     />
                                 </div>
 
                                 <Button
                                     type="submit"
                                     size="lg"
-                                    className="w-full rounded-2xl bg-primary font-semibold text-primary-foreground shadow hover:bg-primary/90 group"
+                                    className="w-full rounded-2xl bg-primary font-semibold text-primary-foreground shadow hover:bg-primary/90 transition-all group"
                                 >
                                     Kirim Laporan
                                     <Send className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />

@@ -18,7 +18,7 @@ const RatingPage = () => {
     const location = useLocation();
 
     // Role & target bisa dikirim via state { role: 'client' | 'worker', target: { name, jobTitle } }
-    const role = location.state?.role || "worker";
+    const role = location.state?.role || "client";
     const target = location.state?.target || {
         name: "User",
         jobTitle: "Tugas Anda",

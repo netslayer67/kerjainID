@@ -1,10 +1,11 @@
-// src/pages/ProfilePage.jsx
-import React, { useMemo } from "react";
+// ProfilePage.jsx
+import React, { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import {
     ArrowLeft,
     User,
+    UserCog,
     Shield,
     Bell,
     HelpCircle,
@@ -12,13 +13,21 @@ import {
     ChevronRight,
     Star,
     CheckCircle,
-    Moon,
-    Sun,
+    Award,
+    Wallet,
+    Gift,
 } from "lucide-react";
 import { Helmet } from "react-helmet";
-import ThemeToggle from "../components/ThemeToggle"; // gunakan komponen yang sudah ada
 
-// minimal polite labels (Indo)
+/**
+ * Lightweight profile page — redesigned:
+ * - cleaner layout
+ * - accent-aware hover + smooth transitions (300-350ms)
+ * - role toggle (Client ↔ Worker) under "Bantuan"
+ * - reduced motion aware
+ */
+
+/* Menu definition (icons only; labels minimal) */
 const MENU = [
     { key: "edit", icon: User, label: "Edit Profil", to: "/profile/edit" },
     { key: "security", icon: Shield, label: "Keamanan", to: "/profile/security" },
@@ -29,11 +38,17 @@ const MENU = [
 const fmtShort = (v) =>
     new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(v || 0);
 
+const getBadge = (completed) => {
+    if (completed >= 200) return { label: "Gold", color: "from-yellow-400 to-amber-500" };
+    if (completed >= 100) return { label: "Silver", color: "from-gray-300 to-gray-400" };
+    return { label: "Bronze", color: "from-amber-600 to-amber-700" };
+};
+
 export default function ProfilePage() {
     const navigate = useNavigate();
     const reduce = useReducedMotion();
+    const [role, setRole] = useState("worker"); // client | worker
 
-    // demo data — nanti ganti dari context / api
     const user = useMemo(
         () => ({
             name: "User Name",
@@ -45,48 +60,26 @@ export default function ProfilePage() {
         []
     );
 
-    // motion variants: simple & respectful of reduced motion
+    const badge = getBadge(user.completed);
+
     const container = {
-        hidden: { opacity: 0, y: 6 },
+        hidden: { opacity: 0, y: 8 },
         show: {
             opacity: 1,
             y: 0,
-            transition: { staggerChildren: reduce ? 0 : 0.06 },
+            transition: { staggerChildren: reduce ? 0 : 0.04 },
         },
     };
     const item = {
         hidden: { opacity: 0, y: 6 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.26, ease: "easeOut" } },
+        show: { opacity: 1, y: 0, transition: { duration: 0.33, ease: "easeOut" } },
     };
 
     return (
         <>
             <Helmet>
                 <title>Profil — Kerjain</title>
-                <meta
-                    name="description"
-                    content="Profil dan pengaturan akun Kerjain — data singkat & preferensi"
-                />
             </Helmet>
-
-            {/* soft background blobs (decorative) */}
-            <div
-                aria-hidden
-                className="absolute inset-0 -z-10 overflow-hidden"
-            >
-                <motion.div
-                    aria-hidden
-                    className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-primary/20 blur-3xl"
-                    animate={reduce ? undefined : { y: [0, 18, 0], scale: [1, 1.03, 1] }}
-                    transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
-                />
-                <motion.div
-                    aria-hidden
-                    className="absolute bottom-0 -right-24 w-72 h-72 rounded-full bg-accent/20 blur-3xl"
-                    animate={reduce ? undefined : { y: [0, -22, 0], scale: [1, 1.06, 1] }}
-                    transition={{ repeat: Infinity, duration: 12, ease: "easeInOut" }}
-                />
-            </div>
 
             <motion.main
                 initial="hidden"
@@ -96,146 +89,173 @@ export default function ProfilePage() {
             >
                 <div className="mx-auto max-w-md">
                     {/* Header */}
-                    <motion.header variants={item} className="mb-5 flex items-center gap-3">
+                    <motion.header variants={item} className="mb-6 flex items-center gap-3">
                         <button
                             onClick={() => navigate(-1)}
                             aria-label="Kembali"
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-card/30 border border-border backdrop-blur-md transition hover:bg-card/60"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-card/40 backdrop-blur-md hover:bg-accent hover:text-accent-foreground transition-colors duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
                         >
-                            <ArrowLeft className="h-5 w-5 text-foreground/80" />
+                            <ArrowLeft className="h-5 w-5" />
                         </button>
 
-                        <div className="flex-1">
-                            <h1 className="text-lg font-semibold leading-tight text-foreground">
-                                Profil
-                            </h1>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                                Akun & preferensi singkat
-                            </p>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-lg font-semibold text-foreground">Profil</h1>
+                            <p className="mt-0.5 text-xs text-muted-foreground">Ringkasan akun</p>
                         </div>
                     </motion.header>
 
-                    {/* Profile card */}
+                    {/* Profile Card */}
                     <motion.section
                         variants={item}
-                        className="rounded-2xl border border-border bg-card/60 backdrop-blur-xl p-4 shadow-sm"
-                        aria-labelledby="profile-heading"
+                        className="rounded-2xl border border-border bg-card/60 backdrop-blur-xl p-5 shadow-sm"
                     >
                         <div className="flex items-center gap-4">
+                            {/* Avatar */}
                             <div
-                                aria-hidden={false}
-                                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-2xl font-semibold text-primary-foreground ring-1 ring-border"
-                                title={user.name}
+                                className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-full
+                           bg-gradient-to-br from-primary to-accent text-2xl font-semibold text-primary-foreground
+                           ring-1 ring-accent/30 shadow-sm overflow-hidden"
+                                aria-hidden
                             >
                                 {user.initials}
+                                <span
+                                    className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100
+                             transition-opacity duration-[350ms]"
+                                    aria-hidden
+                                />
                             </div>
 
+                            {/* Info */}
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                        <p id="profile-heading" className="text-sm font-semibold text-foreground truncate">
-                                            {user.name}
-                                        </p>
-                                        <p className="mt-0.5 text-xs text-muted-foreground truncate">
-                                            {user.email}
-                                        </p>
-                                    </div>
+                                <div className="flex items-center gap-2">
+                                    <p className="text-base font-semibold text-foreground truncate">{user.name}</p>
 
-                                    <div className="flex items-center gap-2 rounded-xl bg-background/20 px-3 py-1">
-                                        <Star className="h-4 w-4 text-yellow-400" />
-                                        <span className="text-sm font-medium text-foreground">
-                                            {user.rating}
-                                        </span>
+                                    <div
+                                        className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] uppercase tracking-wide font-medium text-white shadow-sm bg-gradient-to-r ${badge.color}`}
+                                        aria-hidden
+                                    >
+                                        <Award className="h-3.5 w-3.5" />
+                                        {badge.label}
                                     </div>
                                 </div>
 
+                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+
                                 <div className="mt-3 flex gap-3">
-                                    <div className="flex items-center gap-2 rounded-xl bg-background/20 px-3 py-1">
-                                        <CheckCircle className="h-4 w-4 text-emerald-400" />
-                                        <div className="text-xs text-foreground">
-                                            <div className="font-semibold">{fmtShort(user.completed)}</div>
-                                            <div className="text-[11px] text-muted-foreground">Selesai</div>
-                                        </div>
+                                    <div className="flex items-center gap-1.5 rounded-lg bg-secondary/30 px-2.5 py-1">
+                                        <Star className="h-4 w-4 text-yellow-400" />
+                                        <span className="text-sm font-medium">{user.rating}</span>
                                     </div>
 
-                                    <Link
-                                        to="/profile/edit"
-                                        className="ml-auto inline-flex items-center gap-2 rounded-xl bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-95"
-                                    >
-                                        Edit
-                                    </Link>
+                                    <div className="flex items-center gap-1.5 rounded-lg bg-secondary/30 px-2.5 py-1">
+                                        <CheckCircle className="h-4 w-4 text-emerald-400" />
+                                        <span className="text-xs">
+                                            {fmtShort(user.completed)} <span className="text-muted-foreground">Selesai</span>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </motion.section>
 
-                    {/* Menu group */}
-                    <motion.nav
-                        variants={container}
-                        className="mt-6 space-y-3"
-                        aria-label="Profil menu"
-                    >
+                    {/* Menu */}
+                    <motion.nav variants={container} className="mt-6 space-y-3" aria-label="Profil menu">
                         {MENU.map((m) => {
                             const Icon = m.icon;
                             return (
                                 <motion.div key={m.key} variants={item}>
                                     <Link to={m.to} className="group block">
-                                        <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/40 backdrop-blur-xl px-4 py-3 transition hover:bg-card/60">
+                                        <div
+                                            className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/40 px-4 py-3 backdrop-blur-xl
+                                 transition-colors duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:border-accent hover:bg-accent/8"
+                                        >
                                             <div className="flex items-center gap-3">
-                                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background/30">
-                                                    <Icon className="h-4 w-4 text-foreground/80" aria-hidden />
+                                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary/30">
+                                                    <Icon className="h-4 w-4 text-foreground/80" />
                                                 </div>
-                                                <p className="text-sm font-medium text-foreground truncate">
-                                                    {m.label}
-                                                </p>
+                                                <p className="text-sm font-medium text-foreground truncate">{m.label}</p>
                                             </div>
-
-                                            <ChevronRight className="h-5 w-5 text-muted-foreground" aria-hidden />
+                                            <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-accent" />
                                         </div>
                                     </Link>
                                 </motion.div>
                             );
                         })}
 
+                        {/* Role toggle block — placed after "Bantuan" visually (below menu list) */}
+                        <motion.div variants={item} className="pt-1">
+                            <div
+                                className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/40 px-4 py-3 backdrop-blur-xl
+                           transition-colors duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary/30">
+                                        <UserCog className="h-4 w-4 text-foreground/80" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-foreground">Switch Role</p>
+                                        <p className="text-xs text-muted-foreground">Pindah role kamu</p>
+                                    </div>
+                                </div>
 
+                                {/* Toggle switch */}
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xs text-muted-foreground ">{role === "client" ? "Client" : "Worker"}</span>
+
+                                    <button
+                                        role="switch"
+                                        aria-checked={role === "worker"}
+                                        onClick={() => setRole((r) => (r === "client" ? "worker" : "client"))}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-[350ms] focus:outline-none
+                                ${role === "worker" ? "bg-accent" : "bg-muted/40"} ring-1 ring-border`}
+                                        aria-label="Toggle peran client atau worker"
+                                    >
+                                        <span
+                                            className={`inline-block h-5 w-5 transform rounded-full bg-card-foreground shadow-sm transition-transform duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]
+                                  ${role === "worker" ? "translate-x-5" : "translate-x-0"}`}
+                                        />
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
                     </motion.nav>
 
-                    {/* Small actions */}
-                    <motion.div variants={item} className="mt-5 grid gap-3">
+                    {/* Quick Actions */}
+                    <motion.div variants={item} className="mt-6 grid gap-3">
                         <Link to="/wallet" className="block">
-                            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/40 backdrop-blur-xl px-4 py-3 transition hover:bg-card/60">
-                                <div className="text-sm text-foreground">Dompet saya</div>
-                                <div className="text-xs text-muted-foreground">Saldo & top up</div>
+                            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/40 px-4 py-3 backdrop-blur-xl transition-colors duration-[350ms] hover:border-accent hover:bg-accent/8">
+                                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                                    <Wallet className="h-4 w-4 text-accent" />
+                                    Dompet
+                                </div>
+                                <div className="text-xs text-muted-foreground">Saldo & Top up</div>
                             </div>
                         </Link>
 
                         <Link to="/referral" className="block">
-                            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/40 backdrop-blur-xl px-4 py-3 transition hover:bg-card/60">
-                                <div className="text-sm text-foreground">Undang teman</div>
-                                <div className="text-xs text-muted-foreground">Dapat poin</div>
+                            <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/40 px-4 py-3 backdrop-blur-xl transition-colors duration-[350ms] hover:border-primary hover:bg-primary/8">
+                                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                                    <Gift className="h-4 w-4 text-primary" />
+                                    Undang Teman
+                                </div>
+                                <div className="text-xs text-muted-foreground">Dapat Poin</div>
                             </div>
                         </Link>
                     </motion.div>
 
                     {/* Logout */}
                     <motion.div variants={item} className="mt-6">
-                        <Link to="/logout" className="block" aria-label="Keluar">
-                            <button
-                                type="button"
-                                className="w-full rounded-xl bg-destructive px-4 py-3 text-sm font-semibold text-destructive-foreground shadow-sm transition hover:scale-[0.995]"
-                            >
-                                <span className="inline-flex items-center justify-center gap-2">
-                                    <LogOut className="h-4 w-4" aria-hidden /> Keluar
-                                </span>
-                            </button>
-                        </Link>
+                        <button
+                            type="button"
+                            className="w-full rounded-xl bg-destructive/90 px-4 py-3 text-sm font-semibold text-destructive-foreground shadow-sm transition-all duration-[350ms] hover:bg-destructive/100 focus:ring-2 focus:ring-offset-2 focus:ring-destructive"
+                        >
+                            <span className="inline-flex items-center gap-2 justify-center">
+                                <LogOut className="h-4 w-4" /> Keluar
+                            </span>
+                        </button>
                     </motion.div>
 
-                    <motion.footer
-                        variants={item}
-                        className="mt-5 text-center text-xs text-muted-foreground"
-                        aria-hidden
-                    >
+                    <motion.footer variants={item} className="mt-6 text-center text-xs text-muted-foreground" aria-hidden>
                         Kerjain • © {new Date().getFullYear()}
                     </motion.footer>
                 </div>

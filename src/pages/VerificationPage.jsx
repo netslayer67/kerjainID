@@ -19,7 +19,7 @@ export default function VerificationPage() {
             description: "Segera hadir.",
         });
         setTimeout(() => {
-            toast({ title: "Verifikasi Berhasil", description: "Melanjutkan..." });
+            toast({ title: "✅ Verifikasi Berhasil", description: "Melanjutkan..." });
             if (step < 2) setStep(step + 1);
             else navigate("/select-role");
         }, 1200);
@@ -31,19 +31,17 @@ export default function VerificationPage() {
                 <title>Verifikasi Akun — Kerjain</title>
             </Helmet>
 
-            <div className="relative flex min-h-screen items-center justify-center px-4">
-
-
+            <div className="relative flex min-h-screen items-center justify-center px-4 py-6">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     className="relative z-10 w-full max-w-md"
                 >
-                    <div className="rounded-2xl border border-border bg-card/70 p-8 shadow-xl backdrop-blur-xl">
-                        {/* Title */}
+                    <div className="rounded-2xl border border-border bg-card/70 p-8 shadow-2xl backdrop-blur-xl">
+                        {/* Header */}
                         <div className="mb-6 text-center">
-                            <h1 className="text-2xl font-bold text-foreground">
+                            <h1 className="text-2xl font-bold tracking-tight text-foreground">
                                 Verifikasi Akun
                             </h1>
                             <p className="mt-1 text-sm text-muted-foreground">
@@ -52,17 +50,18 @@ export default function VerificationPage() {
                         </div>
 
                         {/* Progress bar */}
-                        <div className="mb-6 flex items-center gap-3">
+                        <div className="mb-8 flex items-center gap-2">
                             <div
-                                className={`h-1 flex-1 rounded-full ${step >= 1 ? "bg-primary" : "bg-muted"
+                                className={`h-1 flex-1 rounded-full transition-colors ${step >= 1 ? "bg-primary" : "bg-muted"
                                     }`}
                             />
                             <div
-                                className={`h-1 flex-1 rounded-full ${step >= 2 ? "bg-primary" : "bg-muted"
+                                className={`h-1 flex-1 rounded-full transition-colors ${step >= 2 ? "bg-primary" : "bg-muted"
                                     }`}
                             />
                         </div>
 
+                        {/* Steps */}
                         <AnimatePresence mode="wait">
                             {step === 1 && (
                                 <motion.div
@@ -71,17 +70,17 @@ export default function VerificationPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 30 }}
                                     transition={{ duration: 0.4 }}
-                                    className="space-y-4 text-center"
+                                    className="space-y-6 text-center"
                                 >
                                     <h2 className="text-lg font-semibold text-foreground">
                                         Verifikasi KTP
                                     </h2>
                                     <p className="text-sm text-muted-foreground">
-                                        Unggah foto KTP untuk validasi data.
+                                        Unggah foto KTP Anda untuk validasi data.
                                     </p>
 
-                                    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border/50 p-12 glassmorphic">
-                                        <Upload className="h-12 w-12 text-muted-foreground" />
+                                    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border/60 p-12 bg-muted/20 hover:border-accent hover:bg-accent/10 transition-colors cursor-pointer">
+                                        <Upload className="h-12 w-12 text-muted-foreground group-hover:text-accent" />
                                         <span className="text-xs text-muted-foreground">
                                             Klik untuk unggah
                                         </span>
@@ -89,9 +88,10 @@ export default function VerificationPage() {
 
                                     <Button
                                         onClick={() => handleAction("Unggah KTP")}
-                                        className="w-full rounded-xl"
+                                        className="w-full rounded-xl bg-primary hover:bg-accent hover:text-accent-foreground transition-colors"
                                     >
-                                        Lanjut <ArrowRight className="ml-2 h-5 w-5" />
+                                        Lanjut
+                                        <ArrowRight className="ml-2 h-5 w-5" />
                                     </Button>
                                 </motion.div>
                             )}
@@ -103,34 +103,36 @@ export default function VerificationPage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 30 }}
                                     transition={{ duration: 0.4 }}
-                                    className="space-y-4 text-center"
+                                    className="space-y-6 text-center"
                                 >
                                     <h2 className="text-lg font-semibold text-foreground">
                                         Pindai Wajah
                                     </h2>
                                     <p className="text-sm text-muted-foreground">
-                                        Posisikan wajah dalam bingkai.
+                                        Posisikan wajah Anda dalam bingkai kamera.
                                     </p>
 
-                                    <div className="flex aspect-square items-center justify-center rounded-xl bg-muted/30">
-                                        <Camera className="h-16 w-16 text-muted-foreground/50" />
+                                    <div className="flex aspect-square items-center justify-center rounded-xl bg-muted/30 border border-border/40 hover:border-accent hover:bg-accent/10 transition-colors">
+                                        <Camera className="h-16 w-16 text-muted-foreground/60" />
                                     </div>
 
                                     <Button
                                         onClick={() => handleAction("Pindai Wajah")}
-                                        className="w-full rounded-xl"
+                                        className="w-full rounded-xl bg-primary hover:bg-accent hover:text-accent-foreground transition-colors"
                                     >
-                                        Selesai <ArrowRight className="ml-2 h-5 w-5" />
+                                        Selesai
+                                        <ArrowRight className="ml-2 h-5 w-5" />
                                     </Button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
-                        <p className="mt-8 text-center text-xs text-muted-foreground">
+                        {/* Footer */}
+                        <p className="mt-10 text-center text-xs text-muted-foreground">
                             Sudah punya akun?{" "}
                             <Link
                                 to="/login"
-                                className="font-semibold text-primary hover:underline"
+                                className="font-semibold text-primary hover:text-accent transition-colors"
                             >
                                 Masuk
                             </Link>
