@@ -99,7 +99,7 @@ function BackgroundDecor() {
 // Floating utility dock for global actions (Theme)
 function UtilityDock() {
     return (
-        <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2">
+        <div className="fixed bottom-16 right-5 z-50 flex items-center gap-2">
             <ThemeToggle />
         </div>
     );
