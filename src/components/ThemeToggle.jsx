@@ -18,33 +18,45 @@ export default function ThemeToggle() {
     }, [theme]);
 
     return (
-        <motion.button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            whileTap={{ scale: 0.9 }}
-            whileHover={{ scale: 1.1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="
-        fixed bottom-16 right-6 z-50
-        rounded-full p-3
-        shadow-lg
-        backdrop-blur-xl
-        border
-        bg-background/70 dark:bg-background-dark/70
-        border-border dark:border-border-dark
-        text-foreground dark:text-foreground-dark overflow-hidden
-      "
+        <motion.div
+            className="fixed bottom-16 right-6 z-50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
         >
-            {/* Grid pattern overlay */}
-            <div className="absolute inset-0 bg-grid-small/[0.1] dark:bg-grid-small-dark/[0.15] rounded-full pointer-events-none" />
+            {/* blob background */}
+            <motion.div
+                className="absolute -inset-6 rounded-full bg-primary/25 blur-2xl -z-10"
+                animate={{ scale: [1, 1.15, 1], opacity: [0.6, 0.4, 0.6] }}
+                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+            />
 
-            {/* Icon */}
-            {theme === "dark" ? (
-                <Sun className="h-6 w-6 text-accent" />
-            ) : (
-                <Moon className="h-6 w-6 text-accent" />
-            )}
-        </motion.button>
+            {/* toggle button */}
+            <motion.button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 280, damping: 18 }}
+                aria-label="Toggle theme"
+                className="
+          relative flex items-center justify-center
+          h-12 w-12 rounded-full
+          border border-border
+          bg-card/60 backdrop-blur-xl
+          shadow-lg
+          text-foreground
+        "
+            >
+                {/* subtle glass grid */}
+                <div className="absolute inset-0 rounded-full bg-grid-small/[0.08] dark:bg-grid-small-dark/[0.12] pointer-events-none" />
+
+                {/* icon */}
+                {theme === "dark" ? (
+                    <Sun className="h-6 w-6 text-yellow-400" />
+                ) : (
+                    <Moon className="h-6 w-6 text-indigo-400" />
+                )}
+            </motion.button>
+        </motion.div>
     );
 }

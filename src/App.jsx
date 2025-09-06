@@ -16,6 +16,7 @@ const WorkerDashboard = lazy(() => import('@/pages/WorkerDashboard'));
 const PostJobPage = lazy(() => import('@/pages/PostJobPage'));
 const JobTrackingPage = lazy(() => import('@/pages/JobTrackingPage'));
 const ChatPage = lazy(() => import('@/pages/ChatPage'));
+const RoomChat = lazy(() => import('@/pages/RoomChat')); // 🔹 Tambahin
 const WalletPage = lazy(() => import('@/pages/WalletPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const RatingPage = lazy(() => import('@/pages/RatingPage'));
@@ -51,7 +52,7 @@ function App() {
                                 `repeating-linear-gradient(to right, hsl(var(--foreground)/0.06) 0 1px, transparent 1px 56px), repeating-linear-gradient(to bottom, hsl(var(--foreground)/0.06) 0 1px, transparent 1px 56px)`,
                         }}
                     />
-                    {/* Blobs (use design tokens) */}
+                    {/* Blobs */}
                     <motion.div
                         aria-hidden
                         initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
@@ -66,12 +67,15 @@ function App() {
                         transition={{ duration: 0.8, delay: 0.05 }}
                         className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-[hsl(var(--ring))]/25 blur-3xl"
                     />
+
                     <Routes location={location} key={location.pathname}>
+                        {/* Public routes */}
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/verify" element={<VerificationPage />} />
                         <Route path="/select-role" element={<RoleSelectionPage />} />
 
+                        {/* Layout routes */}
                         <Route element={<AppLayout />}>
                             <Route path="/client/dashboard" element={<ClientDashboard />} />
                             <Route path="/worker/dashboard" element={<WorkerDashboard />} />
@@ -87,6 +91,9 @@ function App() {
                             <Route path="/gamification" element={<GamificationPage />} />
                             <Route path="/notifications" element={<NotificationPage />} />
                         </Route>
+
+                        {/* Standalone route tanpa AppLayout */}
+                        <Route path="/chat/:id" element={<RoomChat />} />
                     </Routes>
                 </Suspense>
                 <ThemeToggle />

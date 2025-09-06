@@ -1,3 +1,4 @@
+// JobCard.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,6 +10,7 @@ import {
     X,
     ChevronDown,
     ChevronUp,
+    Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,18 +33,24 @@ export default function JobCard({
     onAcceptClick = () => { },
     onAccepted = () => { },
 }) {
-    const DUMMY_JOB =
-        job || {
-            id: 1,
-            title: "Antar Dokumen",
-            description:
-                "Ambil dokumen dari kantor pusat dan antarkan ke klien di SCBD. Pastikan dokumen aman dan diserahkan langsung ke penerima. Jangan lupa konfirmasi penerimaan setelah selesai.",
-            client: "Andi W.",
-            distance: "1.2 km",
-            fee: 25000,
-            feeLabel: "Rp 25.000",
-            time: "15 menit",
-        };
+    // fallback data (dipakai kalau job undefined / array kosong)
+    const DUMMY_JOB = {
+        id: 1,
+        title: "Antar Dokumen",
+        type: "remote", // onsite | remote
+        description:
+            "Ambil dokumen dari kantor pusat dan antarkan ke klien di SCBD. Pastikan dokumen aman dan diserahkan langsung ke penerima. Jangan lupa konfirmasi penerimaan setelah selesai.",
+        client: "Andi W.",
+        distance: "1.2 km",
+        fee: 25000,
+        feeLabel: "Rp 25.000",
+        time: "15 menit",
+        attachments: ["invoice.pdf", "brief.txt"],
+    };
+
+    // defensive: jika `job` adalah array, ambil item pertama; kalau kosong => fallback
+    const jobData =
+        Array.isArray(job) ? (job.length ? job[0] : DUMMY_JOB) : job || DUMMY_JOB;
 
     const [negotiationOpen, setNegotiationOpen] = useState(false);
     const [proposals, setProposals] = useState([]);
@@ -55,7 +63,7 @@ export default function JobCard({
     const { toast } = useToast();
 
     function formatCurrency(num) {
-        if (!num && num !== 0) return "";
+        if (num == null) return "";
         return "Rp " + Number(num).toLocaleString("id-ID");
     }
 
@@ -74,7 +82,8 @@ export default function JobCard({
 
     const simulateClientResponse = (workerProposal) => {
         setTimeout(() => {
-            const willAccept = workerProposal.amount <= DUMMY_JOB.fee;
+            const fee = Number(jobData?.fee ?? 0);
+            const willAccept = workerProposal.amount <= fee;
             if (willAccept) {
                 const accepted = {
                     from: "client",
@@ -85,9 +94,7 @@ export default function JobCard({
                 setProposals((p) => [accepted, ...p]);
                 handleAcceptedDeal(workerProposal.amount);
             } else {
-                const counterAmt = Math.round(
-                    (workerProposal.amount + DUMMY_JOB.fee) / 2
-                );
+                const counterAmt = Math.round((workerProposal.amount + fee) / 2);
                 const clientCounter = {
                     from: "client",
                     amount: counterAmt,
@@ -149,20 +156,21 @@ export default function JobCard({
         toast({ title: "Anda menolak penawaran", variant: "destructive" });
     };
 
-    // Batasan preview deskripsi
+    // safe preview: gunakan optional chaining + fallback string
     const MAX_PREVIEW_LENGTH = 44;
-    const isLongDesc = DUMMY_JOB.description.length > MAX_PREVIEW_LENGTH;
+    const descriptionText = jobData?.description ?? "";
+    const isLongDesc = (descriptionText.length ?? 0) > MAX_PREVIEW_LENGTH;
     const displayDesc =
         descExpanded || !isLongDesc
-            ? DUMMY_JOB.description
-            : DUMMY_JOB.description.slice(0, MAX_PREVIEW_LENGTH) + "...";
+            ? descriptionText
+            : descriptionText.slice(0, MAX_PREVIEW_LENGTH) + "...";
 
     return (
         <div className="relative min-h-[360px] flex items-start justify-center">
             <AnimatePresence mode="wait">
                 {visible ? (
                     <motion.div
-                        key="incoming-job"
+                        key={`incoming-job-${jobData?.id ?? "fallback"}`}
                         initial={{ opacity: 0, y: 20, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20 }}
@@ -174,8 +182,9 @@ export default function JobCard({
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                     <div className="flex-1 min-w-0">
                                         <CardTitle className="text-base font-semibold text-foreground break-words">
-                                            {DUMMY_JOB.title}
+                                            {jobData?.title ?? "—"}
                                         </CardTitle>
+
                                         <motion.div
                                             initial={false}
                                             animate={{ height: "auto" }}
@@ -185,11 +194,13 @@ export default function JobCard({
                                                 {displayDesc}
                                             </p>
                                         </motion.div>
+
                                         {isLongDesc && (
                                             <motion.button
                                                 whileTap={{ scale: 0.95 }}
                                                 className="mt-1 flex items-center text-xs text-accent/90 hover:text-accent transition"
                                                 onClick={() => setDescExpanded((prev) => !prev)}
+                                                aria-expanded={descExpanded}
                                             >
                                                 {descExpanded ? (
                                                     <>
@@ -203,9 +214,12 @@ export default function JobCard({
                                             </motion.button>
                                         )}
                                     </div>
+
                                     <div className="text-right shrink-0 mt-2 sm:mt-0">
                                         <div className="text-xs text-muted-foreground">Estimasi</div>
-                                        <div className="font-medium text-foreground">{DUMMY_JOB.time}</div>
+                                        <div className="font-medium text-foreground">
+                                            {jobData?.time ?? "-"}
+                                        </div>
                                     </div>
                                 </div>
                             </CardHeader>
@@ -214,9 +228,7 @@ export default function JobCard({
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div className="rounded-xl p-3 bg-background/40 border border-border flex flex-col">
                                         <div className="text-xs text-muted-foreground">Klien</div>
-                                        <div className="font-medium text-foreground">
-                                            {DUMMY_JOB.client}
-                                        </div>
+                                        <div className="font-medium text-foreground">{jobData?.client ?? "-"}</div>
                                     </div>
 
                                     <div className="rounded-xl p-3 bg-background/40 border border-border flex flex-col">
@@ -232,22 +244,47 @@ export default function JobCard({
                                             )}
                                         </div>
                                         <div className="font-semibold text-primary mt-1">
-                                            {dealAmount ? formatCurrency(dealAmount) : DUMMY_JOB.feeLabel}
+                                            {dealAmount ? formatCurrency(dealAmount) : jobData?.feeLabel ?? "-"}
                                         </div>
                                     </div>
 
-                                    <div className="rounded-xl p-3 bg-background/40 border border-border flex items-center gap-2">
-                                        <MapPin className="h-4 w-4 text-accent" />
-                                        <span className="text-sm text-foreground">{DUMMY_JOB.distance}</span>
-                                    </div>
+                                    {/* conditional onsite */}
+                                    {jobData?.type === "onsite" && (
+                                        <div className="rounded-xl p-3 bg-background/40 border border-border flex items-center gap-2">
+                                            <MapPin className="h-4 w-4 text-accent" />
+                                            <span className="text-sm text-foreground">{jobData?.distance ?? "-"}</span>
+                                        </div>
+                                    )}
+
                                     <div className="rounded-xl p-3 bg-background/40 border border-border flex items-center gap-2">
                                         <Clock className="h-4 w-4 text-accent" />
-                                        <span className="text-sm text-foreground">{DUMMY_JOB.time}</span>
+                                        <span className="text-sm text-foreground">{jobData?.time ?? "-"}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                {/* Attachments (safe) */}
+                                {Array.isArray(jobData?.attachments) && jobData.attachments.length > 0 ? (
+                                    <div className="rounded-xl p-3 bg-background/40 border border-border">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Paperclip className="h-4 w-4 text-accent" />
+                                            <span className="text-sm font-medium text-foreground">Lampiran</span>
+                                        </div>
+                                        <ul className="space-y-1">
+                                            {jobData.attachments.map((file, idx) => (
+                                                <li key={idx} className="text-xs text-muted-foreground truncate">
+                                                    {file}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    // optional hint if no attachments
+                                    <div className="rounded-xl p-3 bg-background/10 border border-border text-xs text-muted-foreground">
+                                        Tidak ada lampiran
+                                    </div>
+                                )}
 
+                                <div className="flex flex-col sm:flex-row gap-3 pt-2">
                                     <Button
                                         disabled={jobAccepted}
                                         onClick={() => {
@@ -257,18 +294,14 @@ export default function JobCard({
                                                 description: "Mode pelacakan aktif...",
                                             });
                                             setJobAccepted(true);
-                                            setDealAmount(DUMMY_JOB.fee);
+                                            setDealAmount(jobData?.fee ?? 0);
                                         }}
                                         className="w-full bg-primary text-primary-foreground hover:bg-accent"
                                     >
                                         <Check className="mr-2 h-4 w-4" />
                                         {jobAccepted ? "Diterima" : "Terima"}
                                     </Button>
-                                    <Button
-                                        onClick={() => onClose()}
-                                        variant="outline"
-                                        className="w-full"
-                                    >
+                                    <Button onClick={() => onClose()} variant="outline" className="w-full">
                                         <X className="mr-2 h-4 w-4" /> Tolak
                                     </Button>
                                 </div>
@@ -276,21 +309,11 @@ export default function JobCard({
                         </Card>
                     </motion.div>
                 ) : (
-                    <motion.div
-                        key="empty"
-                        initial="cardHidden"
-                        animate="cardShow"
-                        className="text-center px-4"
-                    >
-                        <motion.h3
-                            variants={motionVariants}
-                            className="text-lg font-semibold text-foreground"
-                        >
+                    <motion.div key="empty" initial="cardHidden" animate="cardShow" className="text-center px-4">
+                        <motion.h3 variants={motionVariants} className="text-lg font-semibold text-foreground">
                             Anda Offline
                         </motion.h3>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                            Aktifkan status online untuk menerima pekerjaan.
-                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">Aktifkan status online untuk menerima pekerjaan.</p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -303,63 +326,39 @@ export default function JobCard({
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
                                     <MessageSquare className="h-5 w-5 text-accent" />
-                                    <div className="text-sm font-semibold text-foreground">
-                                        Negosiasi — {DUMMY_JOB.title}
-                                    </div>
+                                    <div className="text-sm font-semibold text-foreground">Negosiasi — {jobData?.title}</div>
                                 </div>
-                                <button
-                                    onClick={() => !modalLocked && setNegotiationOpen(false)}
-                                    className="text-xs text-muted-foreground"
-                                >
+                                <button onClick={() => !modalLocked && setNegotiationOpen(false)} className="text-xs text-muted-foreground">
                                     Tutup
                                 </button>
                             </div>
 
                             <div className="space-y-2 max-h-40 overflow-auto pr-2">
                                 {proposals.length === 0 ? (
-                                    <div className="text-xs text-muted-foreground">
-                                        Belum ada penawaran.
-                                    </div>
+                                    <div className="text-xs text-muted-foreground">Belum ada penawaran.</div>
                                 ) : (
                                     proposals.map((p, i) => (
                                         <div
                                             key={p.ts + i}
-                                            className={`flex items-center justify-between gap-3 p-2 rounded-lg border ${p.status === "accepted"
-                                                ? "border-accent/80 bg-accent/8"
-                                                : "border-border bg-background/20"
+                                            className={`flex items-center justify-between gap-3 p-2 rounded-lg border ${p.status === "accepted" ? "border-accent/80 bg-accent/8" : "border-border bg-background/20"
                                                 }`}
                                         >
                                             <div className="text-xs">
-                                                <div className="uppercase tracking-wide text-[10px] text-muted-foreground">
-                                                    {p.from}
-                                                </div>
-                                                <div className="font-medium text-foreground">
-                                                    {formatCurrency(p.amount)}
-                                                </div>
+                                                <div className="uppercase tracking-wide text-[10px] text-muted-foreground">{p.from}</div>
+                                                <div className="font-medium text-foreground">{formatCurrency(p.amount)}</div>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 {p.status === "pending" && p.from === "client" ? (
                                                     <>
-                                                        <Button
-                                                            size="sm"
-                                                            disabled={modalLocked}
-                                                            onClick={() => acceptClientProposal(p)}
-                                                        >
+                                                        <Button size="sm" disabled={modalLocked} onClick={() => acceptClientProposal(p)}>
                                                             Terima
                                                         </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            disabled={modalLocked}
-                                                            onClick={() => rejectProposal(p)}
-                                                        >
+                                                        <Button size="sm" variant="outline" disabled={modalLocked} onClick={() => rejectProposal(p)}>
                                                             Tolak
                                                         </Button>
                                                     </>
                                                 ) : (
-                                                    <div className="text-xs text-muted-foreground">
-                                                        {p.status}
-                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">{p.status}</div>
                                                 )}
                                             </div>
                                         </div>
@@ -369,20 +368,12 @@ export default function JobCard({
 
                             {/* QUICK OFFERS */}
                             <div className="mt-3">
-                                <div className="text-xs font-medium text-muted-foreground mb-2">
-                                    Penawaran cepat:
-                                </div>
+                                <div className="text-xs font-medium text-muted-foreground mb-2">Penawaran cepat:</div>
                                 <div className="flex flex-wrap gap-2">
                                     {[0.8, 1, 1.2].map((m, i) => {
-                                        const quickAmount = Math.round(DUMMY_JOB.fee * m);
+                                        const quickAmount = Math.round((jobData?.fee ?? 0) * m);
                                         return (
-                                            <Button
-                                                key={i}
-                                                size="sm"
-                                                variant="outline"
-                                                disabled={modalLocked}
-                                                onClick={() => sendCounterOffer(quickAmount)}
-                                            >
+                                            <Button key={i} size="sm" variant="outline" disabled={modalLocked} onClick={() => sendCounterOffer(quickAmount)}>
                                                 {formatCurrency(quickAmount)}
                                             </Button>
                                         );
@@ -399,20 +390,13 @@ export default function JobCard({
                                             inputMode="numeric"
                                             disabled={modalLocked}
                                             value={counterValue}
-                                            onChange={(e) =>
-                                                setCounterValue(e.target.value.replace(/[^\d]/g, ""))
-                                            }
-                                            placeholder={formatCurrency(DUMMY_JOB.fee)}
+                                            onChange={(e) => setCounterValue(e.target.value.replace(/[^\d]/g, ""))}
+                                            placeholder={formatCurrency(jobData?.fee)}
                                             className="w-full bg-transparent text-sm text-foreground outline-none"
                                         />
                                     </div>
                                 </div>
-                                <Button
-                                    disabled={modalLocked}
-                                    onClick={() =>
-                                        sendCounterOffer(counterValue || DUMMY_JOB.fee)
-                                    }
-                                >
+                                <Button disabled={modalLocked} onClick={() => sendCounterOffer(counterValue || jobData?.fee || 0)}>
                                     <DollarSign className="h-4 w-4 mr-1" /> Kirim
                                 </Button>
                             </div>

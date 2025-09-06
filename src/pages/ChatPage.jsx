@@ -1,16 +1,38 @@
+// ChatPage.jsx
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Send, Paperclip } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import AnimatedPage from "@/components/AnimatedPage";
 import { Helmet } from "react-helmet";
 
-const messages = [
-    { id: 1, sender: "other", text: "Halo, saya sudah di jalan menuju lokasi Anda.", time: "10:30" },
-    { id: 2, sender: "me", text: "Oke, ditunggu ya. Kalau sudah dekat kabari.", time: "10:31" },
-    { id: 3, sender: "other", text: "Siap!", time: "10:31" },
+// Dummy data: daftar chat
+const chatList = [
+    {
+        id: 1,
+        name: "Budi Santoso",
+        initials: "B",
+        lastMsg: "Halo, saya sudah di jalan menuju lokasi Anda.",
+        time: "10:30",
+        online: true,
+    },
+    {
+        id: 2,
+        name: "Citra Dewi",
+        initials: "C",
+        lastMsg: "Oke, besok kita lanjut ya!",
+        time: "Kemarin",
+        online: false,
+    },
+    {
+        id: 3,
+        name: "Andi W.",
+        initials: "A",
+        lastMsg: "Terima kasih ya sudah selesai 🙏",
+        time: "Senin",
+        online: false,
+    },
 ];
 
 export default function ChatPage() {
@@ -21,77 +43,53 @@ export default function ChatPage() {
             </Helmet>
 
             <div className="relative mx-auto flex h-dvh max-w-lg flex-col">
-
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="relative z-10 flex items-center gap-3 border-b border-border bg-card/50 px-4 py-3 backdrop-blur-xl"
+                    className="z-10 flex items-center justify-between border-b border-border bg-card/50 px-4 py-3 backdrop-blur-xl"
                 >
-                    <Link to={-1}>
-                        <Button variant="ghost" size="icon" className="rounded-full">
-                            <ArrowLeft className="h-5 w-5 text-foreground" />
-                        </Button>
-                    </Link>
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                            B
-                        </div>
-                        <div>
-                            <h1 className="text-sm font-semibold text-foreground">Budi Santoso</h1>
-                            <p className="text-xs text-emerald-400">Online</p>
-                        </div>
-                    </div>
+                    <h1 className="text-lg font-semibold">Obrolan</h1>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                        <Search className="h-5 w-5 text-foreground" />
+                    </Button>
                 </motion.div>
 
-                {/* Messages */}
-                <div className="relative z-10 flex-1 space-y-4 overflow-y-auto px-4 py-5">
-                    {messages.map((msg) => (
+                {/* Chat List */}
+                <div className="flex-1 overflow-y-auto px-2 py-3 space-y-2">
+                    {chatList.map((chat) => (
                         <motion.div
-                            key={msg.id}
+                            key={chat.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3 }}
-                            className={`flex ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
                         >
-                            <div
-                                className={`max-w-[75%] rounded-2xl px-4 py-2 shadow-xl backdrop-blur ${msg.sender === "me"
-                                    ? "rounded-br-none bg-primary text-primary-foreground"
-                                    : "rounded-bl-none bg-card/70 text-foreground"
-                                    }`}
+                            <Link
+                                to={`/chat/${chat.id}`}
+                                className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card/40 p-3 text-left shadow-sm backdrop-blur-md hover:bg-card/60 transition"
                             >
-                                <p className="text-sm leading-relaxed">{msg.text}</p>
-                                <p className="mt-1 text-[11px] text-right text-muted-foreground">
-                                    {msg.time}
-                                </p>
-                            </div>
+                                <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                                    {chat.initials}
+                                    {chat.online && (
+                                        <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-card"></span>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between">
+                                        <p className="truncate text-sm font-semibold text-foreground">
+                                            {chat.name}
+                                        </p>
+                                        <span className="text-xs text-muted-foreground">{chat.time}</span>
+                                    </div>
+                                    <p className="truncate text-xs text-muted-foreground">
+                                        {chat.lastMsg}
+                                    </p>
+                                </div>
+                            </Link>
                         </motion.div>
                     ))}
                 </div>
-
-                {/* Input Area */}
-                <motion.form
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="relative z-10 flex items-center gap-2 border-t border-border bg-card/50 px-3 py-2 backdrop-blur-xl"
-                >
-                    <Button variant="ghost" size="icon" type="button" className="rounded-full">
-                        <Paperclip className="h-5 w-5 text-muted-foreground" />
-                    </Button>
-                    <Input
-                        placeholder="Ketik pesan..."
-                        className="flex-1 rounded-full border-border bg-background/50 text-foreground placeholder:text-muted-foreground"
-                    />
-                    <Button
-                        size="icon"
-                        type="submit"
-                        className="rounded-full bg-primary hover:bg-primary/90"
-                    >
-                        <Send className="h-5 w-5 text-primary-foreground" />
-                    </Button>
-                </motion.form>
             </div>
         </AnimatedPage>
     );

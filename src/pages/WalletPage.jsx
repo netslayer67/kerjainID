@@ -33,7 +33,7 @@ const seedTx = [
 export default function WalletPage() {
     const [activeTab, setActiveTab] = useState("semua");
     const [isLoading, setIsLoading] = useState(true);
-    const shouldReduceMotion = useReducedMotion();
+    const reduceMotion = useReducedMotion();
 
     useEffect(() => {
         const t = setTimeout(() => setIsLoading(false), 800);
@@ -41,30 +41,38 @@ export default function WalletPage() {
     }, []);
 
     const balance = useMemo(() => 583500, []);
-
     const filtered = useMemo(() => {
         if (activeTab === "masuk") return seedTx.filter((t) => t.type === "in");
         if (activeTab === "keluar") return seedTx.filter((t) => t.type === "out");
         return seedTx;
     }, [activeTab]);
 
-    // Animation variants
     const fadeUp = {
-        hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 16 },
+        hidden: { opacity: 0, y: reduceMotion ? 0 : 18 },
         show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
     };
 
     return (
-        <div className="relative min-h-screen bg-background text-foreground px-4 py-6 md:px-8">
+        <div className="relative min-h-screen text-foreground">
+            {/* floating blobs */}
+            <motion.div
+                className="absolute top-20 left-10 h-40 w-40 rounded-full bg-primary/20 blur-3xl"
+                animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.35, 0.5] }}
+                transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+            />
+            <motion.div
+                className="absolute bottom-32 right-6 h-44 w-44 rounded-full bg-secondary/20 blur-3xl"
+                animate={{ scale: [1, 1.15, 1], opacity: [0.45, 0.3, 0.45] }}
+                transition={{ repeat: Infinity, duration: 10, ease: "easeInOut" }}
+            />
 
-
-            {/* Main Content */}
+            {/* Content */}
             <div className="relative mx-auto max-w-lg px-4 pb-24 pt-6">
                 {/* Header */}
                 <div className="mb-6 flex items-center gap-3">
                     <Link
                         to={-1}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card/50 backdrop-blur-md ring-1 ring-border hover:bg-card transition"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card/40 backdrop-blur-md ring-1 ring-border hover:bg-card transition"
                     >
                         <ArrowLeft className="h-5 w-5 text-foreground" />
                     </Link>
@@ -92,7 +100,7 @@ export default function WalletPage() {
                 {/* Tabs & Transactions */}
                 <motion.div variants={fadeUp} initial="hidden" animate="show" className="mt-7 space-y-4">
                     {/* Tabs */}
-                    <div className="inline-flex w-full justify-center rounded-2xl bg-card/50 p-1 backdrop-blur-md ring-1 ring-border">
+                    <div className="inline-flex w-full justify-center rounded-2xl bg-card/40 p-1 backdrop-blur-md ring-1 ring-border">
                         {[
                             { key: "semua", label: "Semua" },
                             { key: "masuk", label: "Masuk" },
@@ -103,7 +111,7 @@ export default function WalletPage() {
                                 onClick={() => setActiveTab(t.key)}
                                 className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition ${activeTab === t.key
                                     ? "bg-card text-foreground"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-card/40"
                                     }`}
                             >
                                 {t.label}
@@ -143,7 +151,7 @@ function CardWrapper({ children }) {
 
 function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
     return (
-        <div className="overflow-hidden rounded-3xl border border-border bg-card/50 p-6 backdrop-blur-2xl shadow-2xl">
+        <div className="overflow-hidden rounded-3xl border border-border bg-card/60 p-6 backdrop-blur-2xl shadow-2xl">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                 {/* Saldo */}
                 <div>
@@ -190,9 +198,9 @@ function QuickActions() {
                 <motion.button
                     key={i}
                     whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={a.onClick}
-                    className="group flex items-center gap-4 rounded-3xl border border-border bg-card/50 p-5 text-left backdrop-blur-xl hover:bg-card transition"
+                    className="group flex items-center gap-4 rounded-3xl border border-border bg-card/50 p-5 text-left backdrop-blur-xl hover:bg-card/60 transition"
                 >
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-muted text-foreground">
                         {a.icon}
