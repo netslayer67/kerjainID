@@ -1,12 +1,12 @@
 // components/JobCard.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Clock, Paperclip } from "lucide-react";
+import { MapPin, Clock, Paperclip, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NegotiationModal from "./NegotiationModal";
 
 export default function JobCard({
-    role = "worker", // "worker" | "client"
+    role = "worker",
     job,
     visible = true,
     onClose,
@@ -15,11 +15,24 @@ export default function JobCard({
 }) {
     const [showNegotiation, setShowNegotiation] = useState(false);
     const [proposals, setProposals] = useState([]);
+    const [expanded, setExpanded] = useState(false);
 
     if (!visible || !job) return null;
 
+    // Helper format uang
     const formatCurrency = (num) =>
         "Rp " + Number(num || 0).toLocaleString("id-ID");
+
+    // Prevent XSS/script injection
+    const safeText = (text) => {
+        if (!text) return "";
+        return text.replace(/<[^>]*>?/gm, "").replace(/(https?:\/\/[^\s]+)/g, "");
+    };
+
+    // Deskripsi short/long toggle
+    const desc = safeText(job.description || "");
+    const isLong = desc.length > 40;
+    const displayDesc = expanded ? desc : desc.slice(0, 40);
 
     const handleSendOffer = (amount) => {
         const newProposal = {
@@ -33,7 +46,9 @@ export default function JobCard({
 
     const handleAccept = (p) => {
         setProposals((prev) =>
-            prev.map((x) => (x.ts === p.ts ? { ...x, status: "accepted" } : x))
+            prev.map((x) =>
+                x.ts === p.ts ? { ...x, status: "accepted" } : x
+            )
         );
         onAccepted?.(p.amount);
         setShowNegotiation(false);
@@ -41,7 +56,9 @@ export default function JobCard({
 
     const handleReject = (p) => {
         setProposals((prev) =>
-            prev.map((x) => (x.ts === p.ts ? { ...x, status: "rejected" } : x))
+            prev.map((x) =>
+                x.ts === p.ts ? { ...x, status: "rejected" } : x
+            )
         );
     };
 
@@ -52,15 +69,14 @@ export default function JobCard({
                 drag="x"
                 dragConstraints={{ left: 0, right: 0 }}
                 onDragEnd={(e, info) => {
-                    if (info.offset.x < -120) {
-                        // swipe kiri untuk tolak
-                        onClose?.(job.id);
-                    }
+                    if (info.offset.x < -120) onClose?.(job.id);
                 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="relative rounded-2xl border border-border bg-card/70 backdrop-blur-xl shadow-lg p-5 mb-4 cursor-grab active:cursor-grabbing transition-all duration-300"
+                className="relative rounded-2xl border border-border bg-card/70 backdrop-blur-xl 
+                   shadow-lg p-5 mb-4 cursor-grab active:cursor-grabbing 
+                   transition-all duration-350 hover:shadow-xl hover:border-accent"
                 whileHover={{ scale: 1.02 }}
             >
                 {/* HEADER */}
@@ -80,8 +96,16 @@ export default function JobCard({
                 </div>
 
                 {/* BODY */}
-                <p className="mt-3 text-sm text-foreground/90 line-clamp-2">
-                    {job.description}
+                <p className="mt-3 text-sm text-foreground/90">
+                    {displayDesc}
+                    {isLong && (
+                        <button
+                            onClick={() => setExpanded(!expanded)}
+                            className="ml-2 text-accent text-xs hover:underline transition-colors duration-300"
+                        >
+                            {expanded ? "Ringkas" : "Selengkapnya"}
+                        </button>
+                    )}
                 </p>
 
                 <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
@@ -101,6 +125,12 @@ export default function JobCard({
                             {job.attachments.length} file
                         </span>
                     )}
+                    {job.paymentMethod && (
+                        <span className="flex items-center gap-1">
+                            <Wallet className="h-4 w-4 text-accent" />{" "}
+                            {job.paymentMethod === "cash" ? "Tunai" : "Saldo Wallet"}
+                        </span>
+                    )}
                 </div>
 
                 {/* CTA */}
@@ -108,14 +138,18 @@ export default function JobCard({
                     {role === "worker" ? (
                         <>
                             <Button
-                                className="flex-1 bg-primary hover:bg-primary/90 text-white transition-colors duration-350"
+                                className="flex-1 bg-primary text-white 
+                           hover:bg-primary/90 
+                           transition-colors duration-350"
                                 onClick={onAcceptClick}
                             >
                                 Terima
                             </Button>
                             <Button
                                 variant="outline"
-                                className="flex-1 border-accent text-accent hover:bg-accent hover:text-white transition-colors duration-350"
+                                className="flex-1 border-accent text-accent 
+                           hover:bg-accent hover:text-white 
+                           transition-colors duration-350"
                                 onClick={() => setShowNegotiation(true)}
                             >
                                 Negosiasi
@@ -124,7 +158,9 @@ export default function JobCard({
                     ) : (
                         <Button
                             variant="outline"
-                            className="flex-1 border-secondary text-secondary hover:bg-secondary hover:text-white transition-colors duration-350"
+                            className="flex-1 border-secondary text-secondary 
+                         hover:bg-secondary hover:text-white 
+                         transition-colors duration-350"
                             onClick={() => setShowNegotiation(true)}
                         >
                             Lihat Negosiasi

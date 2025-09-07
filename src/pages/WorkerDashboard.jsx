@@ -8,32 +8,33 @@ import AnimatedPage from "@/components/AnimatedPage";
 import { useToast } from "@/components/ui/use-toast";
 import JobCard from "@/components/JobCard";
 
-// Dummy jobs
 const DUMMY_JOBS = [
     {
         id: 1,
-        title: "Antar Dokumen",
+        title: "Beli Kopi Cepat",
         type: "onsite",
-        description:
-            "Ambil dokumen dari kantor pusat dan antarkan ke klien di SCBD. Pastikan dokumen aman dan serahkan langsung ke penerima.",
-        client: "Andi W.",
-        distance: "1.2 km",
-        fee: 25000,
-        feeLabel: "Rp 25.000",
-        time: "15 menit",
-        attachments: ["surat_pengantar.pdf"],
+        description: "Ambil kopi di kedai depan komplek dan antar ke rumah.",
+        client: "Budi S.",
+        distance: "500 m",
+        fee: 15000,
+        feeLabel: "Rp 15.000",
+        time: "10 menit",
+        paymentMethod: "cash",
+        attachments: [], // ga perlu lampiran karena job simple
     },
     {
         id: 2,
-        title: "Desain Banner Produk",
+        title: "Desain Brosur Produk",
         type: "remote",
         description:
-            "Buat desain banner promosi skincare. Kirim file final PSD + PNG sebelum deadline.",
-        client: "PT GlowUp",
-        fee: 500000,
-        feeLabel: "Rp 500.000",
+            "Membuat desain brosur untuk produk baru dengan format A4. Gunakan brand color yang sudah disediakan, sertakan minimal 2 konsep draft. File akhir harus dalam format PDF dan AI.",
+        client: "Siti R.",
+        distance: null, // remote, jadi ga ada jarak
+        fee: 200000,
+        feeLabel: "Rp 200.000",
         time: "2 hari",
-        attachments: ["brief.docx", "logo.png"],
+        paymentMethod: "wallet",
+        attachments: ["brand_guidelines.pdf", "logo_ai.zip"],
     },
 ];
 
