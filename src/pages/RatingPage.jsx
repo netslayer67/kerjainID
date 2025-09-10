@@ -1,3 +1,4 @@
+// src/pages/RatingPage.jsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
@@ -8,7 +9,14 @@ import AnimatedPage from "@/components/AnimatedPage";
 import { useToast } from "@/components/ui/use-toast";
 import { Helmet } from "react-helmet";
 
-const RatingPage = () => {
+/* -------- Utils: sanitize input -------- */
+const safeInput = (v) =>
+    String(v || "")
+        .replace(/<[^>]*>/g, "") // block script tags
+        .replace(/https?:\/\/[^\s]+/gi, "") // block links
+        .slice(0, 500); // limit length
+
+export default function RatingPage() {
     const [rating, setRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [comment, setComment] = useState("");
@@ -17,7 +25,6 @@ const RatingPage = () => {
     const { id } = useParams();
     const location = useLocation();
 
-    // Role & target bisa dikirim via state { role: 'client' | 'worker', target: { name, jobTitle } }
     const role = location.state?.role || "client";
     const target = location.state?.target || {
         name: "User",
@@ -28,20 +35,18 @@ const RatingPage = () => {
         e.preventDefault();
         if (rating === 0) {
             toast({
-                title: "Rating belum diisi",
-                description: "Silakan pilih bintang terlebih dahulu.",
+                title: "Belum ada rating",
+                description: "Silakan pilih bintang dulu ya.",
                 variant: "destructive",
             });
             return;
         }
 
-        // Simulasi API submit
         toast({
             title: "Terima kasih!",
-            description: "Ulasan Anda sudah terkirim.",
+            description: "Ulasan berhasil dikirim.",
         });
 
-        // Redirect sesuai role
         setTimeout(() => {
             navigate(role === "client" ? "/client/dashboard" : "/worker/dashboard");
         }, 1200);
@@ -53,52 +58,53 @@ const RatingPage = () => {
                 <title>Beri Ulasan — Kerjain</title>
             </Helmet>
 
-            <div className="relative min-h-dvh w-full px-4 py-6 md:px-6">
+            <div className="relative min-h-dvh w-full px-4 py-6 md:px-6 text-foreground">
                 {/* Header */}
                 <motion.div
-                    initial={{ opacity: 0, y: -20 }}
+                    initial={{ opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
                     className="mb-6 flex items-center gap-3"
                 >
                     <Link to={-1}>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-background/30 backdrop-blur-md hover:bg-background/50"
+                            className="rounded-full bg-card/40 hover:bg-accent/20 transition-colors duration-300"
                         >
-                            <ArrowLeft className="h-5 w-5 text-foreground" />
+                            <ArrowLeft className="h-5 w-5" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-foreground">Beri Ulasan</h1>
+                    <h1 className="text-lg font-semibold">Beri Ulasan</h1>
                 </motion.div>
 
                 {/* Rating Card */}
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.35, ease: "easeOut" }}
                 >
-                    <Card className="rounded-3xl border border-border/40 bg-background/40 shadow-2xl backdrop-blur-2xl">
+                    <Card className="rounded-3xl border border-border/30 bg-background/50 shadow-lg backdrop-blur-xl">
                         <CardContent className="p-6 text-center space-y-6">
-                            <h2 className="text-lg font-semibold text-foreground">
+                            <h2 className="text-base font-medium">
                                 Nilai {role === "client" ? "Kinerja" : "Klien"}{" "}
-                                <span className="text-primary font-bold">{target.name}</span>
+                                <span className="text-primary font-semibold">{target.name}</span>
                             </h2>
-                            <p className="text-sm text-muted-foreground">{target.jobTitle}</p>
+                            <p className="text-xs text-muted-foreground">{target.jobTitle}</p>
 
                             {/* Stars */}
-                            <div className="flex justify-center gap-3">
+                            <div className="flex justify-center gap-4">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <motion.div
                                         key={star}
-                                        whileHover={{ scale: 1.2 }}
+                                        whileHover={{ scale: 1.15 }}
                                         whileTap={{ scale: 0.9 }}
+                                        className="transition-transform duration-300"
                                     >
                                         <Star
-                                            className={`h-10 w-10 cursor-pointer transition-colors ${(hoverRating || rating) >= star
-                                                ? "text-yellow-400 fill-yellow-400"
-                                                : "text-muted-foreground"
+                                            className={`h-9 w-9 cursor-pointer transition-colors duration-300 ${(hoverRating || rating) >= star
+                                                    ? "text-accent fill-accent"
+                                                    : "text-muted-foreground"
                                                 }`}
                                             onClick={() => setRating(star)}
                                             onMouseEnter={() => setHoverRating(star)}
@@ -111,20 +117,20 @@ const RatingPage = () => {
                             {/* Form */}
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <textarea
-                                    placeholder={`Tulis komentar singkat (opsional)...`}
+                                    placeholder="Tulis komentar singkat (opsional)..."
                                     rows="3"
                                     value={comment}
-                                    onChange={(e) => setComment(e.target.value)}
-                                    className="w-full rounded-2xl border border-border/40 bg-background/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 backdrop-blur-sm"
-                                ></textarea>
+                                    onChange={(e) => setComment(safeInput(e.target.value))}
+                                    className="w-full rounded-2xl border border-border/40 bg-background/40 px-3 py-2 text-sm resize-none transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                                />
 
                                 <Button
                                     type="submit"
                                     size="lg"
-                                    className="w-full rounded-2xl bg-foreground text-background font-semibold shadow hover:bg-foreground/90 group"
+                                    className="w-full rounded-2xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-medium shadow transition-all duration-350 hover:opacity-90 group"
                                 >
                                     Kirim
-                                    <Send className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                                    <Send className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
                                 </Button>
                             </form>
                         </CardContent>
@@ -133,6 +139,4 @@ const RatingPage = () => {
             </div>
         </AnimatedPage>
     );
-};
-
-export default RatingPage;
+}

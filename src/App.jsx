@@ -1,14 +1,14 @@
+// App.jsx
 import React, { Suspense, lazy, useMemo } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 
-// Layout & shared
 import AppLayout from '@/components/Layout/AppLayout';
 import PageLoader from '@/components/PageLoader';
 import ThemeToggle from '@/components/ThemeToggle';
 
-// Lazy pages (code-split)
+// Lazy load pages
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const VerificationPage = lazy(() => import('@/pages/VerificationPage'));
@@ -29,6 +29,7 @@ const GamificationPage = lazy(() => import('@/pages/GamificationPage'));
 const NotificationPage = lazy(() => import('@/pages/NotificationPage'));
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
 const SignupPage = lazy(() => import('@/pages/SignupPage'));
+const JobPage = lazy(() => import('@/pages/JobPage'));
 
 // Smooth, premium duration across the app
 const TRANSITION_MS = 320; // 300–350ms sweet spot
@@ -112,49 +113,50 @@ export default function App() {
         <>
             <Helmet>
                 <title>Kerjain — Dapatkan Bantuan, Tawarkan Jasa</title>
-                <meta
-                    name="description"
-                    content="Kerjain: platform auto-matching untuk tugas mikro hingga proyek makro. Cari bantuan instan atau tawarkan keahlian Anda."
-                />
+                <meta name="description" content="Kerjain: platform auto-matching untuk tugas mikro hingga proyek makro." />
                 <meta property="og:title" content="Kerjain — Dapatkan Bantuan, Tawarkan Jasa" />
                 <meta property="og:description" content="Platform auto-matching untuk semua jenis pekerjaan." />
                 <meta name="theme-color" content="#090040" />
-                <link rel="preconnect" href="https://fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
-                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
             </Helmet>
 
-            {/* Skip link for a11y */}
             <a
                 href="#content"
                 className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60]
-                   focus:bg-primary focus:text-primary-foreground focus:px-3 focus:py-2 focus:rounded-lg"
+          focus:bg-primary focus:text-primary-foreground focus:px-3 focus:py-2 focus:rounded-lg"
             >
                 Lompat ke konten
             </a>
 
-            {/* App shell — background + route transitions */}
             <div className="relative min-h-screen bg-background text-foreground">
                 <BackgroundDecor />
 
                 <AnimatePresence mode="wait">
                     <Suspense fallback={<PageLoader />}>
                         <Routes location={location} key={location.pathname}>
-                            {/* Public routes */}
+                            {/* Public */}
                             <Route path="/" element={<PageWrapper><LandingPage /></PageWrapper>} />
                             <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
                             <Route path="/register" element={<PageWrapper><SignupPage /></PageWrapper>} />
                             <Route path="/verify" element={<PageWrapper><VerificationPage /></PageWrapper>} />
                             <Route path="/select-role" element={<PageWrapper><RoleSelectionPage /></PageWrapper>} />
 
-                            {/* Routes with main app layout */}
+                            {/* Protected with AppLayout */}
                             <Route element={<AppLayout />}>
+                                {/* Client */}
                                 <Route path="/client/dashboard" element={<PageWrapper><ClientDashboard /></PageWrapper>} />
+                                <Route path="/client/wallet" element={<PageWrapper><WalletPage role="client" /></PageWrapper>} />
+                                <Route path="/client/history" element={<PageWrapper><HistoryPage role="client" /></PageWrapper>} />
+
+                                {/* Worker */}
                                 <Route path="/worker/dashboard" element={<PageWrapper><WorkerDashboard /></PageWrapper>} />
+                                <Route path="/worker/jobs" element={<PageWrapper><JobPage /></PageWrapper>} />
+                                <Route path="/worker/wallet" element={<PageWrapper><WalletPage role="worker" /></PageWrapper>} />
+                                <Route path="/worker/history" element={<PageWrapper><HistoryPage role="worker" /></PageWrapper>} />
+                                <Route path="/worker/chat" element={<PageWrapper><ChatPage role="worker" /></PageWrapper>} />
+
+                                {/* Shared */}
                                 <Route path="/post-job" element={<PageWrapper><PostJobPage /></PageWrapper>} />
                                 <Route path="/job/:id/track" element={<PageWrapper><JobTrackingPage /></PageWrapper>} />
-                                <Route path="/chat" element={<PageWrapper><ChatPage /></PageWrapper>} />
-                                <Route path="/wallet" element={<PageWrapper><WalletPage /></PageWrapper>} />
                                 <Route path="/profile" element={<PageWrapper><ProfilePage /></PageWrapper>} />
                                 <Route path="/job/:id/rate" element={<PageWrapper><RatingPage /></PageWrapper>} />
                                 <Route path="/dispute" element={<PageWrapper><DisputePage /></PageWrapper>} />
@@ -162,10 +164,9 @@ export default function App() {
                                 <Route path="/referral" element={<PageWrapper><ReferralPage /></PageWrapper>} />
                                 <Route path="/gamification" element={<PageWrapper><GamificationPage /></PageWrapper>} />
                                 <Route path="/notifications" element={<PageWrapper><NotificationPage /></PageWrapper>} />
-                                <Route path="/history" element={<PageWrapper><HistoryPage /></PageWrapper>} />
                             </Route>
 
-                            {/* Standalone route without AppLayout */}
+                            {/* Standalone */}
                             <Route path="/chat/:id" element={<PageWrapper><RoomChat /></PageWrapper>} />
                         </Routes>
                     </Suspense>

@@ -1,3 +1,4 @@
+// HistoryPage.jsx
 import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import AnimatedPage from "@/components/AnimatedPage";
 
+// --- Dummy Data (nanti bisa diganti API) ---
 const seedJobs = [
     {
         id: "JOB-2025-0901-01",
@@ -75,6 +77,7 @@ const seedJobs = [
     },
 ];
 
+// --- Helpers ---
 const fmtIDR = (n) =>
     new Intl.NumberFormat("id-ID", {
         style: "currency",
@@ -82,6 +85,10 @@ const fmtIDR = (n) =>
         maximumFractionDigits: 0,
     }).format(n);
 
+const sanitizeInput = (val) =>
+    val.replace(/[<>]/g, "").replace(/(script|http|www)/gi, "");
+
+// --- Status Badge ---
 const StatusBadge = ({ status }) => {
     const map = {
         completed: "bg-emerald-500/12 text-emerald-400 ring-1 ring-emerald-500/20",
@@ -94,7 +101,8 @@ const StatusBadge = ({ status }) => {
             : status === "ongoing"
                 ? "Berjalan"
                 : "Batal";
-    const Icon = status === "completed" ? CheckCircle2 : status === "ongoing" ? Clock3 : XCircle;
+    const Icon =
+        status === "completed" ? CheckCircle2 : status === "ongoing" ? Clock3 : XCircle;
 
     return (
         <span
@@ -106,6 +114,7 @@ const StatusBadge = ({ status }) => {
     );
 };
 
+// --- Payment Badge ---
 const PayBadge = ({ payment }) => {
     const isPaid = payment === "paid";
     return (
@@ -121,6 +130,7 @@ const PayBadge = ({ payment }) => {
     );
 };
 
+// --- Job Card ---
 const JobRow = React.memo(function JobRow({ job, as = "worker" }) {
     return (
         <motion.div
@@ -132,6 +142,7 @@ const JobRow = React.memo(function JobRow({ job, as = "worker" }) {
             className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl 
                  hover:border-accent hover:bg-accent/10 transition-colors duration-350"
         >
+            {/* hover accent glow */}
             <div
                 className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350"
                 style={{
@@ -158,18 +169,18 @@ const JobRow = React.memo(function JobRow({ job, as = "worker" }) {
                         })}
                     </p>
 
-                    {as === "worker" && job.rating ? (
+                    {as === "worker" && job.rating && (
                         <p className="mt-1 inline-flex items-center gap-1 text-xs text-foreground/80">
                             <Star className="h-3.5 w-3.5 text-yellow-400" />
                             {job.rating}
                         </p>
-                    ) : null}
+                    )}
 
-                    {as === "client" && job.feedback ? (
+                    {as === "client" && job.feedback && (
                         <p className="mt-1 text-xs text-muted-foreground italic">
                             “{job.feedback}”
                         </p>
-                    ) : null}
+                    )}
                 </div>
 
                 <div className="flex shrink-0 items-end sm:flex-col sm:items-end gap-2">
@@ -187,10 +198,11 @@ const JobRow = React.memo(function JobRow({ job, as = "worker" }) {
     );
 });
 
+// --- Empty State ---
 const EmptyState = ({ role, filter }) => {
     const msg = filter === "all" ? "Belum ada data." : "Tidak ada hasil.";
     return (
-        <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 p-10 text-center">
+        <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 p-10 text-center backdrop-blur-md">
             <BadgeCheck className="mx-auto h-10 w-10 text-accent" />
             <p className="mt-2 text-sm font-medium text-foreground">
                 {role === "worker" ? "Riwayat kerja kosong" : "Riwayat posting kosong"}
@@ -200,6 +212,7 @@ const EmptyState = ({ role, filter }) => {
     );
 };
 
+// --- Main Page ---
 export default function HistoryPage() {
     const [role, setRole] = useState("worker");
     const [filter, setFilter] = useState("all");
@@ -211,9 +224,6 @@ export default function HistoryPage() {
         show: { opacity: 1, y: 0, transition: { duration: 0.36 } },
     };
 
-    const sanitizeInput = (val) =>
-        val.replace(/[<>]/g, "").replace(/(script|http|www)/gi, "");
-
     const filtered = useMemo(() => {
         const list = seedJobs.filter((j) => j.type === role);
         const byFilter = filter === "all" ? list : list.filter((j) => j.status === filter);
@@ -222,10 +232,7 @@ export default function HistoryPage() {
                 `${j.title} ${j.category} ${j.id}`.toLowerCase().includes(q.toLowerCase())
             )
             : byFilter;
-
-        return [...byQuery].sort(
-            (a, b) => +new Date(b.date) - +new Date(a.date)
-        );
+        return [...byQuery].sort((a, b) => +new Date(b.date) - +new Date(a.date));
     }, [role, filter, q]);
 
     return (
@@ -256,6 +263,7 @@ export default function HistoryPage() {
                         <h1 className="text-lg font-semibold text-foreground">Riwayat</h1>
                     </div>
 
+                    {/* role switch */}
                     <div className="inline-flex rounded-2xl bg-card/50 p-1 backdrop-blur-md ring-1 ring-border">
                         {["worker", "client"].map((r) => (
                             <button
@@ -280,6 +288,7 @@ export default function HistoryPage() {
                     animate="show"
                     className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3"
                 >
+                    {/* search */}
                     <div className="relative sm:col-span-2">
                         <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -290,6 +299,7 @@ export default function HistoryPage() {
                         />
                     </div>
 
+                    {/* filter */}
                     <div className="inline-flex w-full items-center justify-between gap-2 rounded-2xl border border-border/60 bg-card/50 p-1 backdrop-blur-md">
                         {[
                             { key: "all", label: "Semua" },
@@ -335,13 +345,12 @@ export default function HistoryPage() {
                                     <EmptyState role={role} filter={filter} />
                                 </motion.div>
                             ) : (
-                                filtered.map((job) => (
-                                    <JobRow key={job.id} job={job} as={role} />
-                                ))
+                                filtered.map((job) => <JobRow key={job.id} job={job} as={role} />)
                             )}
                         </AnimatePresence>
                     </div>
 
+                    {/* footer note */}
                     <div className="mt-6 rounded-2xl border border-border/60 bg-background/40 p-4 text-center backdrop-blur-xl">
                         <p className="text-xs text-muted-foreground">
                             Detail pembayaran tersedia di halaman pekerjaan.

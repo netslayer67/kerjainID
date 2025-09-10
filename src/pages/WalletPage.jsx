@@ -30,7 +30,6 @@ const seedTx = [
     { id: 5, type: "in", title: "Refund", amount: 85000, date: "2025-08-27" },
 ];
 
-// Duration constant
 const TRANS_MS = 320;
 
 export default function WalletPage() {
@@ -50,19 +49,16 @@ export default function WalletPage() {
         return seedTx;
     }, [activeTab]);
 
-    const onTopUp = useCallback(() => {
-        // hook into modal / route later
-        alert("Top Up (demo)");
-    }, []);
+    const onTopUp = useCallback(() => alert("Top Up (demo)"), []);
+    const onWithdraw = useCallback(() => alert("Tarik Dana (demo)"), []);
 
-    const onWithdraw = useCallback(() => {
-        alert("Tarik Dana (demo)");
-    }, []);
-
-    // Keep motion minimal — just for the balance card if motion allowed
     const balanceMotion = reduceMotion
         ? {}
-        : { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: TRANS_MS / 1000, ease: "easeOut" } };
+        : {
+            initial: { opacity: 0, y: 10 },
+            animate: { opacity: 1, y: 0 },
+            transition: { duration: TRANS_MS / 1000, ease: "easeOut" },
+        };
 
     return (
         <div className="relative min-h-screen text-foreground">
@@ -71,7 +67,7 @@ export default function WalletPage() {
                 <div className="mb-6 flex items-center gap-3">
                     <Link
                         to={-1}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card/50 ring-1 ring-border text-muted-foreground hover:text-accent transition-colors duration-300"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-card/40 backdrop-blur-xl ring-1 ring-border text-muted-foreground hover:text-accent transition-colors duration-300"
                         aria-label="Kembali"
                     >
                         <ArrowLeft className="h-5 w-5" />
@@ -95,12 +91,12 @@ export default function WalletPage() {
 
                 {/* Quick Actions */}
                 <div className="mt-5">
-                    <QuickActions reduceMotion={reduceMotion} />
+                    <QuickActions />
                 </div>
 
                 {/* Tabs & Transactions */}
                 <div className="mt-7 space-y-4">
-                    <div className="inline-flex w-full justify-center rounded-2xl bg-card/50 p-1 ring-1 ring-border transition-colors duration-300">
+                    <div className="inline-flex w-full justify-center rounded-2xl bg-card/40 backdrop-blur-xl p-1 ring-1 ring-border transition-colors duration-300">
                         {[
                             { key: "semua", label: "Semua" },
                             { key: "masuk", label: "Masuk" },
@@ -109,9 +105,9 @@ export default function WalletPage() {
                             <button
                                 key={t.key}
                                 onClick={() => setActiveTab(t.key)}
-                                className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition-colors duration-300 ${activeTab === t.key
-                                    ? "bg-accent text-accent-foreground shadow-sm"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-card/40"
+                                className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${activeTab === t.key
+                                    ? "bg-accent text-accent-foreground shadow"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
                                     }`}
                                 aria-pressed={activeTab === t.key}
                             >
@@ -120,22 +116,18 @@ export default function WalletPage() {
                         ))}
                     </div>
 
-                    <CardWrapper>
+                    <GlassCard>
                         <div className="flex items-center gap-2 pb-3">
                             <Receipt className="h-5 w-5 text-accent" />
                             <h2 className="text-base font-semibold">Riwayat Transaksi</h2>
                         </div>
 
                         <div className="divide-y divide-border">
-                            {isLoading ? (
-                                // lightweight skeleton list
-                                Array.from({ length: 4 }).map((_, i) => <TxSkeleton key={i} />)
-                            ) : (
-                                // memoized item components — no per-item motion
-                                filtered.map((tx) => <TransactionItem key={tx.id} tx={tx} />)
-                            )}
+                            {isLoading
+                                ? Array.from({ length: 4 }).map((_, i) => <TxSkeleton key={i} />)
+                                : filtered.map((tx) => <TransactionItem key={tx.id} tx={tx} />)}
                         </div>
-                    </CardWrapper>
+                    </GlassCard>
                 </div>
             </div>
         </div>
@@ -144,9 +136,9 @@ export default function WalletPage() {
 
 /* ---------- Subcomponents ---------- */
 
-function CardWrapper({ children }) {
+function GlassCard({ children }) {
     return (
-        <div className="rounded-3xl border border-border bg-card/60 p-5 shadow-sm">
+        <div className="rounded-3xl border border-border/60 bg-card/40 backdrop-blur-xl p-5 shadow-sm transition-all duration-300 hover:border-accent/50">
             {children}
         </div>
     );
@@ -155,7 +147,7 @@ function CardWrapper({ children }) {
 function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
     return (
         <div
-            className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/95 to-primary p-6 text-primary-foreground shadow"
+            className="overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-primary/95 to-primary backdrop-blur-xl p-6 text-primary-foreground shadow-md"
             style={{ transition: `all ${TRANS_MS}ms ease-out` }}
         >
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
@@ -174,14 +166,14 @@ function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                     <button
                         onClick={onTopUp}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground shadow-sm hover:bg-accent hover:text-accent-foreground transition-colors duration-300"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground shadow-sm hover:bg-accent hover:text-accent-foreground transition-all duration-300"
                     >
                         <Plus className="h-4 w-4" /> Top Up
                     </button>
 
                     <button
                         onClick={onWithdraw}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-primary-foreground ring-1 ring-inset ring-primary-foreground/40 hover:bg-accent hover:text-accent-foreground transition-colors duration-300"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold text-primary-foreground ring-1 ring-inset ring-primary-foreground/40 hover:bg-accent hover:text-accent-foreground transition-all duration-300"
                     >
                         <Download className="h-4 w-4" /> Tarik
                     </button>
@@ -191,7 +183,7 @@ function BalanceCard({ isLoading, balance, onTopUp, onWithdraw }) {
     );
 }
 
-function QuickActions({ reduceMotion }) {
+function QuickActions() {
     const actions = [
         { icon: <Shuffle className="h-5 w-5" />, title: "Transfer", desc: "Kirim cepat", onClick: () => alert("Transfer") },
         { icon: <ScanLine className="h-5 w-5" />, title: "Scan & Pay", desc: "Bayar QR", onClick: () => alert("Scan & Pay") },
@@ -203,8 +195,7 @@ function QuickActions({ reduceMotion }) {
                 <button
                     key={i}
                     onClick={a.onClick}
-                    className="group flex items-center gap-4 rounded-3xl border border-border bg-card/50 p-4 text-left transition-colors duration-300 hover:bg-accent/10"
-                    style={{ willChange: "transform" }} // hint to browser for smoother hover transform
+                    className="group flex items-center gap-4 rounded-3xl border border-border/60 bg-card/40 backdrop-blur-xl p-4 text-left transition-all duration-300 hover:border-accent/50"
                     aria-label={a.title}
                 >
                     <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-secondary/30 text-secondary-foreground">
@@ -223,7 +214,7 @@ function QuickActions({ reduceMotion }) {
     );
 }
 
-/* TransactionItem: lightweight, memoized (NO framer-motion) */
+/* Transaction Item */
 const TransactionItem = React.memo(function TransactionItem({ tx }) {
     const isIn = tx.type === "in";
     return (
@@ -232,16 +223,16 @@ const TransactionItem = React.memo(function TransactionItem({ tx }) {
                 <div
                     className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isIn ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
                         }`}
-                    aria-hidden
                 >
                     {isIn ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
                 </div>
                 <div>
                     <p className="text-sm font-medium">{tx.title}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(tx.date).toLocaleDateString("id-ID")}</p>
+                    <p className="text-xs text-muted-foreground">
+                        {new Date(tx.date).toLocaleDateString("id-ID")}
+                    </p>
                 </div>
             </div>
-
             <p className={`text-sm font-semibold ${isIn ? "text-emerald-400" : "text-rose-400"}`}>
                 {isIn ? "+" : "-"} {fmtIDR(tx.amount)}
             </p>

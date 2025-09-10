@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Zap, FileText, WalletMinimal, HandCoins } from "lucide-react";
 import { Link } from "react-router-dom";
 
-// --- Simple sanitization ---
+// --- Input sanitization helper ---
 const sanitizeInput = (value) =>
     value
         .replace(/<.*?>/g, "")
@@ -17,7 +17,8 @@ export default function PostJobPage() {
     const [formData, setFormData] = useState({
         title: "",
         description: "",
-        budget: "",
+        budget: "", // formatted
+        budgetRaw: "", // pure number
         durationValue: "",
         durationUnit: "jam",
         category: "",
@@ -26,14 +27,31 @@ export default function PostJobPage() {
         location: "",
     });
 
-    const handleChange = (field, value) =>
+    // generic handler
+    const handleChange = (field, value) => {
         setFormData((prev) => ({ ...prev, [field]: sanitizeInput(value) }));
+    };
+
+    // budget khusus: raw + formatted
+    const handleBudgetChange = (value) => {
+        const raw = value.replace(/\D/g, "");
+        const formatted = raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : "";
+        setFormData((prev) => ({
+            ...prev,
+            budgetRaw: raw,
+            budget: formatted,
+        }));
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const payload = {
+            ...formData,
+            budget: formData.budgetRaw, // kirim raw ke backend
+        };
         alert(
             `Posting ${mode} job dengan pembayaran ${payment}:\n${JSON.stringify(
-                formData,
+                payload,
                 null,
                 2
             )}`
@@ -42,38 +60,26 @@ export default function PostJobPage() {
 
     const fadeSlide = {
         hidden: { opacity: 0, y: 15 },
-        show: {
-            opacity: 1,
-            y: 0,
-            transition: { duration: 0.35, ease: "easeOut" },
-        },
-        exit: {
-            opacity: 0,
-            y: -15,
-            transition: { duration: 0.25, ease: "easeIn" },
-        },
+        show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+        exit: { opacity: 0, y: -15, transition: { duration: 0.25, ease: "easeIn" } },
     };
 
     return (
         <div className="relative min-h-screen text-foreground">
             {/* Header */}
-            <div className="mx-auto max-w-2xl px-4 py-6 flex items-center gap-3">
+            <header className="mx-auto max-w-2xl px-4 py-6 flex items-center gap-3">
                 <Link
                     to={-1}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full 
-          bg-card/40 backdrop-blur-md border border-border text-muted-foreground 
-          hover:bg-accent hover:text-accent-foreground transition-colors duration-350"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card/40 backdrop-blur-xl text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-300"
                 >
                     <ArrowLeft className="h-5 w-5" />
                 </Link>
-                <h1 className="text-lg font-semibold tracking-tight">
-                    Buat Pekerjaan
-                </h1>
-            </div>
+                <h1 className="text-lg font-semibold tracking-tight">Buat Pekerjaan</h1>
+            </header>
 
             {/* Mode Toggle */}
-            <div className="mx-auto max-w-2xl px-4">
-                <div className="inline-flex w-full rounded-2xl bg-card/50 backdrop-blur-md border border-border p-1">
+            <section className="mx-auto max-w-2xl px-4">
+                <div className="inline-flex w-full rounded-2xl border border-border/60 bg-card/40 backdrop-blur-xl p-1">
                     <ToggleButton
                         active={mode === "quick"}
                         onClick={() => setMode("quick")}
@@ -87,10 +93,10 @@ export default function PostJobPage() {
                         label="Detail"
                     />
                 </div>
-            </div>
+            </section>
 
             {/* Form */}
-            <div className="mx-auto max-w-2xl px-4 py-6">
+            <main className="mx-auto max-w-2xl px-4 py-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <AnimatePresence mode="wait">
                         {mode === "quick" ? (
@@ -112,29 +118,20 @@ export default function PostJobPage() {
                                     label="Deskripsi Singkat"
                                     placeholder="Tuliskan kebutuhanmu"
                                     value={formData.description}
-                                    onChange={(e) =>
-                                        handleChange("description", e.target.value)
-                                    }
+                                    onChange={(e) => handleChange("description", e.target.value)}
                                 />
                                 <div className="flex gap-2">
                                     <input
                                         type="number"
                                         min="1"
                                         placeholder="2"
-                                        className="w-24 rounded-xl border border-border bg-card/60 px-3 py-2 text-sm 
-                    shadow-sm focus:ring-2 focus:ring-accent focus:border-accent 
-                    transition-all duration-350
-                    [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none 
-                    [&::-webkit-inner-spin-button]:appearance-none"
+                                        className="w-24 rounded-xl border border-border bg-card/60 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         value={formData.durationValue}
-                                        onChange={(e) =>
-                                            handleChange("durationValue", e.target.value)
-                                        }
+                                        onChange={(e) => handleChange("durationValue", e.target.value)}
                                         onWheel={(e) => e.target.blur()}
                                     />
                                     <select
-                                        className="flex-1 rounded-xl border border-border bg-card/60 px-3 py-2 text-sm shadow-sm 
-                    focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-350"
+                                        className="flex-1 rounded-xl border border-border bg-card/60 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300"
                                         value={formData.durationUnit}
                                         onChange={(e) => handleChange("durationUnit", e.target.value)}
                                     >
@@ -143,20 +140,13 @@ export default function PostJobPage() {
                                         <option value="hari">Hari</option>
                                     </select>
                                 </div>
-
                                 <InputField
                                     label="Budget"
                                     placeholder="Rp 100.000"
                                     value={formData.budget}
-                                    onChange={(e) => {
-                                        const raw = e.target.value.replace(/\D/g, "");
-                                        const formatted = raw
-                                            ? new Intl.NumberFormat("id-ID").format(Number(raw))
-                                            : "";
-                                        handleChange("budget", formatted);
-                                    }}
+                                    onChange={(e) => handleBudgetChange(e.target.value)}
+                                    type="text"
                                     inputMode="numeric"
-                                    pattern="[0-9]*"
                                 />
                             </motion.div>
                         ) : (
@@ -178,9 +168,7 @@ export default function PostJobPage() {
                                     label="Deskripsi"
                                     placeholder="Ceritakan detail pekerjaanmu"
                                     value={formData.description}
-                                    onChange={(e) =>
-                                        handleChange("description", e.target.value)
-                                    }
+                                    onChange={(e) => handleChange("description", e.target.value)}
                                 />
                                 <InputField
                                     label="Kategori"
@@ -196,17 +184,11 @@ export default function PostJobPage() {
                                 />
                                 <InputField
                                     label="Budget"
-                                    placeholder="Rp 1.500.000"
+                                    placeholder="Rp 1.000.000"
                                     value={formData.budget}
-                                    onChange={(e) => {
-                                        const raw = e.target.value.replace(/\D/g, "");
-                                        const formatted = raw
-                                            ? new Intl.NumberFormat("id-ID").format(Number(raw))
-                                            : "";
-                                        handleChange("budget", formatted);
-                                    }}
+                                    onChange={(e) => handleBudgetChange(e.target.value)}
+                                    type="text"
                                     inputMode="numeric"
-                                    pattern="[0-9]*"
                                 />
                                 <InputField
                                     label="Deadline"
@@ -251,15 +233,13 @@ export default function PostJobPage() {
                             type="submit"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.97 }}
-                            className="w-full rounded-2xl bg-primary px-5 py-3 font-semibold 
-              text-primary-foreground shadow-sm transition-all duration-350 
-              hover:bg-accent hover:text-accent-foreground"
+                            className="w-full rounded-2xl bg-primary px-5 py-3 font-semibold text-primary-foreground shadow-sm transition-all duration-350 hover:bg-accent hover:text-accent-foreground"
                         >
                             {mode === "quick" ? "Cari Bantuan" : "Posting Pekerjaan"}
                         </motion.button>
                     </div>
                 </form>
-            </div>
+            </main>
         </div>
     );
 }
@@ -270,8 +250,7 @@ function ToggleButton({ active, onClick, icon, label }) {
         <button
             onClick={onClick}
             type="button"
-            className={`flex-1 flex items-center justify-center gap-1 rounded-xl px-4 py-2 
-      text-sm font-medium transition-colors duration-350 ${active
+            className={`flex-1 flex items-center justify-center gap-1 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${active
                     ? "bg-accent text-accent-foreground shadow"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
                 }`}
@@ -286,8 +265,7 @@ function PayButton({ active, onClick, icon, label }) {
         <button
             onClick={onClick}
             type="button"
-            className={`flex-1 flex items-center justify-center gap-1 rounded-xl px-4 py-2 
-      text-sm font-medium transition-colors duration-350 ${active
+            className={`flex-1 flex items-center justify-center gap-1 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${active
                     ? "bg-accent text-accent-foreground shadow"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
                 }`}
@@ -305,9 +283,7 @@ function InputField({ label, ...props }) {
             </label>
             <input
                 {...props}
-                className="w-full rounded-xl border border-border bg-card/70 px-4 py-2 text-sm 
-        shadow-sm placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-accent 
-        focus:border-accent transition-all duration-350"
+                className="w-full rounded-xl border border-border bg-card/70 px-4 py-2 text-sm shadow-sm placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300"
             />
         </div>
     );
@@ -322,9 +298,7 @@ function TextAreaField({ label, ...props }) {
             <textarea
                 rows={4}
                 {...props}
-                className="w-full rounded-xl border border-border bg-card/70 px-4 py-2 text-sm 
-        shadow-sm placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-accent 
-        focus:border-accent transition-all duration-350"
+                className="w-full rounded-xl border border-border bg-card/70 px-4 py-2 text-sm shadow-sm placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300"
             />
         </div>
     );

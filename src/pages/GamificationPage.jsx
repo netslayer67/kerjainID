@@ -1,17 +1,38 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Award, ShieldCheck, Star, TrendingUp } from "lucide-react";
+import { ArrowLeft, Award, ShieldCheck, TrendingUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import AnimatedPage from "@/components/AnimatedPage";
 import { Helmet } from "react-helmet";
 
+// Badge list with status
 const badges = [
-    { icon: Star, name: "Pekerja Baru", desc: "Selesaikan 1 pekerjaan", earned: true },
-    { icon: TrendingUp, name: "Rajin Bekerja", desc: "Selesaikan 10 pekerjaan", earned: true },
-    { icon: Award, name: "Ahli", desc: "Selesaikan 50 pekerjaan", earned: false },
-    { icon: ShieldCheck, name: "Terpercaya", desc: "Rating 4.8+ setelah 20 pekerjaan", earned: false },
+    {
+        icon: Star,
+        name: "Pekerja Baru",
+        desc: "Selesaikan 1 pekerjaan",
+        status: "new",
+    },
+    {
+        icon: TrendingUp,
+        name: "Rajin Bekerja",
+        desc: "Selesaikan 10 pekerjaan",
+        status: "earned",
+    },
+    {
+        icon: Award,
+        name: "Ahli",
+        desc: "Selesaikan 50 pekerjaan",
+        status: "locked",
+    },
+    {
+        icon: ShieldCheck,
+        name: "Terpercaya",
+        desc: "Rating 4.8+ setelah 20 pekerjaan",
+        status: "earned",
+    },
 ];
 
 const GamificationPage = () => {
@@ -20,13 +41,28 @@ const GamificationPage = () => {
     const xpToNextLevel = 500;
     const progress = (userXP / xpToNextLevel) * 100;
 
+    // Animasi unik per badge
+    const animations = {
+        new: {
+            animate: { scale: [1, 1.3, 1], y: [0, -6, 0] },
+            transition: { duration: 0.6, repeat: 2, ease: "easeInOut" },
+        },
+        earnedTrending: {
+            whileHover: { rotate: [0, -10, 10, 0], transition: { duration: 0.5 } },
+        },
+        earnedShield: {
+            whileHover: { rotate: 360, transition: { duration: 0.8 } },
+        },
+        locked: {},
+    };
+
     return (
         <AnimatedPage>
             <Helmet>
                 <title>Level & Lencana — Kerjain</title>
                 <meta
                     name="description"
-                    content="Lihat progres, level, dan lencana yang telah Anda dapatkan sebagai pekerja di Kerjain."
+                    content="Lihat progres, level, dan lencana yang Anda dapatkan di Kerjain."
                 />
             </Helmet>
 
@@ -35,14 +71,14 @@ const GamificationPage = () => {
                 <motion.div
                     initial={{ opacity: 0, y: -16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
+                    transition={{ duration: 0.35 }}
                     className="flex items-center gap-3"
                 >
                     <Link to={-1}>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full bg-card/40 backdrop-blur-md ring-1 ring-border text-muted-foreground hover:text-accent-foreground hover:bg-accent/20 transition-all"
+                            className="rounded-full bg-card/40 backdrop-blur-md ring-1 ring-border text-muted-foreground hover:text-accent-foreground hover:bg-accent/20 transition-all duration-300"
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
@@ -56,7 +92,9 @@ const GamificationPage = () => {
                 <Card className="rounded-3xl border border-border/50 bg-card/60 backdrop-blur-xl shadow-xl">
                     <CardContent className="space-y-6 p-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-2xl font-bold text-foreground">Level {userLevel}</h2>
+                            <h2 className="text-2xl font-bold text-foreground">
+                                Level {userLevel}
+                            </h2>
                             <p className="text-sm text-muted-foreground">
                                 {userXP} / {xpToNextLevel} XP
                             </p>
@@ -82,39 +120,64 @@ const GamificationPage = () => {
                 <motion.div
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
+                    transition={{ duration: 0.35 }}
                 >
-                    <h2 className="mb-4 text-lg font-semibold text-foreground">Lencana Saya</h2>
+                    <h2 className="mb-4 text-lg font-semibold text-foreground">
+                        Lencana Saya
+                    </h2>
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                        {badges.map((badge, index) => (
-                            <motion.div
-                                key={badge.name}
-                                initial={{ opacity: 0, scale: 0.85 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.4, delay: index * 0.1 }}
-                            >
-                                <Card
-                                    className={`rounded-2xl border backdrop-blur-lg transition-all duration-300 hover:scale-105 ${badge.earned
-                                            ? "bg-card/70 border-primary/40 shadow-md hover:shadow-lg"
-                                            : "bg-muted/40 border-border opacity-60"
-                                        }`}
+                        {badges.map((badge, index) => {
+                            const isNew = badge.status === "new";
+                            const isEarned = badge.status === "earned";
+                            const isLocked = badge.status === "locked";
+
+                            // Tentukan animasi icon
+                            let iconProps = {};
+                            if (isNew) iconProps = animations.new;
+                            if (isEarned && badge.icon === TrendingUp)
+                                iconProps = animations.earnedTrending;
+                            if (isEarned && badge.icon === ShieldCheck)
+                                iconProps = animations.earnedShield;
+
+                            return (
+                                <motion.div
+                                    key={badge.name}
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.35, delay: index * 0.1 }}
                                 >
-                                    <CardContent className="p-5 text-center space-y-3">
-                                        <badge.icon
-                                            className={`mx-auto h-10 w-10 transition-colors ${badge.earned ? "text-yellow-400" : "text-muted-foreground"
-                                                }`}
-                                        />
-                                        <p
-                                            className={`font-medium ${badge.earned ? "text-foreground" : "text-muted-foreground"
-                                                }`}
-                                        >
-                                            {badge.name}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">{badge.desc}</p>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        ))}
+                                    <Card
+                                        className={`rounded-2xl border backdrop-blur-lg transition-all duration-300 ${isLocked
+                                                ? "bg-muted/40 border-border opacity-60"
+                                                : "bg-card/70 border-primary/40 shadow-md hover:shadow-lg hover:scale-105"
+                                            }`}
+                                    >
+                                        <CardContent className="p-5 text-center space-y-3">
+                                            {/* Icon */}
+                                            <motion.div {...iconProps}>
+                                                <badge.icon
+                                                    className={`mx-auto h-10 w-10 ${isLocked
+                                                            ? "text-muted-foreground"
+                                                            : "text-yellow-400"
+                                                        }`}
+                                                />
+                                            </motion.div>
+
+                                            {/* Text */}
+                                            <p
+                                                className={`font-medium ${isLocked ? "text-muted-foreground" : "text-foreground"
+                                                    }`}
+                                            >
+                                                {badge.name}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {badge.desc}
+                                            </p>
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </motion.div>
             </div>

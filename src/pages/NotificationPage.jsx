@@ -2,24 +2,42 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { motion, AnimatePresence, MotionConfig, useReducedMotion } from "framer-motion";
-import { ArrowLeft, Wallet, Star, Bell, Check, Trash2, X, BellRing } from "lucide-react";
+import {
+    motion,
+    AnimatePresence,
+    MotionConfig,
+    useReducedMotion,
+} from "framer-motion";
+import {
+    ArrowLeft,
+    Wallet,
+    Star,
+    Bell,
+    Check,
+    Trash2,
+    X,
+    BellRing,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import AnimatedPage from "@/components/AnimatedPage";
 
-/**
- * Sample data (replace with API)
- */
-const initialNotifications = [
+/* ---------------- sample data (replace with API) ---------------- */
+const SAMPLE_NOTIFS = [
     { id: 1, icon: Wallet, title: "Pembayaran berhasil", text: "Rp 150.000 dari Budi", time: "1 jam lalu", read: false },
     { id: 2, icon: Star, title: "Rating baru", text: "Budi memberi Anda ★★★★★", time: "2 jam lalu", read: false },
     { id: 3, icon: Bell, title: "Promo spesial", text: "Diskon 20% pakai kode HEMAT", time: "1 hari lalu", read: true },
     { id: 4, icon: Wallet, title: "Penarikan diproses", text: "Rp 200.000 sedang diproses", time: "2 hari lalu", read: true },
 ];
 
-/* small helper */
-const cn = (...c) => c.filter(Boolean).join(" ");
+/* ---------------- small helpers ---------------- */
+const sanitizeText = (v = "") =>
+    String(v)
+        .replace(/<[^>]*>/g, "") // remove HTML tags
+        .replace(/https?:\/\/[^\s]+/gi, "") // remove links
+        .trim();
+
+const DURATION = 0.32; // 320ms
 
 const listVariants = {
     hidden: { opacity: 0 },
@@ -28,18 +46,18 @@ const listVariants = {
 
 const itemMotion = (reduced) => ({
     hidden: { opacity: 0, y: reduced ? 0 : 8 },
-    enter: { opacity: 1, y: 0, transition: { duration: 0.32 } },
+    enter: { opacity: 1, y: 0, transition: { duration: DURATION, ease: "easeOut" } },
     exit: { opacity: 0, x: -60, transition: { duration: 0.28 } },
 });
 
-/* ---------------- NotificationItem (memoized) ---------------- */
-const NotificationItem = React.memo(function NotificationItem({
-    n,
-    onMarkRead,
-    onDismiss,
-    reduceMotion,
-}) {
+/* ----------------------------------------------------------------
+   NotificationItem (memoized presentational)
+   - props: n, onMarkRead(id), onDismiss(id)
+   - accessible, compact, uses tokens for colors & transitions
+------------------------------------------------------------------*/
+const NotificationItem = React.memo(function NotificationItem({ n, onMarkRead, onDismiss, reduceMotion }) {
     const Icon = n.icon || BellRing;
+    const read = !!n.read;
 
     return (
         <motion.div
@@ -61,51 +79,46 @@ const NotificationItem = React.memo(function NotificationItem({
                 }}
             >
                 <Card
-                    className={cn(
-                        "rounded-2xl border border-border/40 bg-card/60 backdrop-blur-xl transition-all duration-300 ease-[cubic-bezier(.2,.9,.2,1)]",
-                        n.read ? "opacity-85 hover:opacity-95" : "ring-1 ring-primary/20 shadow-sm"
-                    )}
                     role="article"
-                    aria-live={n.read ? "polite" : "assertive"}
+                    aria-live={read ? "polite" : "assertive"}
+                    className={`rounded-2xl border border-border/40 bg-card/60 backdrop-blur-xl transition-all duration-350 ease-[cubic-bezier(.2,.9,.2,1)]
+            ${read ? "opacity-90 hover:opacity-95" : "ring-1 ring-primary/20 shadow-sm hover:shadow-md"}
+          `}
                 >
                     <CardContent className="flex items-start gap-3 p-4">
-                        {/* icon */}
                         <div
-                            className={cn(
-                                "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300",
-                                n.read ? "bg-secondary/20 text-muted-foreground" : "bg-primary/10 text-primary"
-                            )}
                             aria-hidden
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-350
+                ${read ? "bg-secondary/20 text-muted-foreground" : "bg-accent/10 text-accent"}
+              `}
                         >
                             <Icon className="h-5 w-5" />
                         </div>
 
-                        {/* main */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
-                                    <p className="truncate text-sm font-medium text-foreground">{n.title}</p>
-                                    <p className="mt-1 truncate text-xs text-muted-foreground">{n.text}</p>
+                                    <p className="truncate text-sm font-medium text-foreground">{sanitizeText(n.title)}</p>
+                                    <p className="mt-1 truncate text-xs text-muted-foreground">{sanitizeText(n.text)}</p>
                                 </div>
 
                                 <div className="flex flex-col items-end gap-2">
-                                    <time className="text-[11px] text-muted-foreground" aria-hidden>
+                                    <time className="text-[11px] text-muted-foreground" dateTime={n.date || ""} aria-hidden>
                                         {n.time}
                                     </time>
 
-                                    {/* unread dot */}
-                                    {!n.read ? (
+                                    {!read ? (
                                         <span className="inline-flex h-2 w-2 rounded-full bg-accent ring-2 ring-card/40" aria-hidden />
                                     ) : null}
                                 </div>
                             </div>
 
                             <div className="mt-3 flex flex-wrap items-center gap-2">
-                                {!n.read ? (
+                                {!read ? (
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        className="h-7 px-2 text-xs transition-colors duration-300 hover:bg-accent hover:text-accent-foreground"
+                                        className="h-7 px-2 text-xs transition-colors duration-320 hover:bg-accent hover:text-accent-foreground"
                                         onClick={() => onMarkRead(n.id)}
                                         aria-label={`Tandai notifikasi ${n.title} sebagai dibaca`}
                                     >
@@ -115,7 +128,7 @@ const NotificationItem = React.memo(function NotificationItem({
                                     <Button
                                         size="sm"
                                         variant="ghost"
-                                        className="h-7 px-2 text-xs transition-colors duration-300 hover:text-destructive"
+                                        className="h-7 px-2 text-xs transition-colors duration-320 hover:text-destructive"
                                         onClick={() => onDismiss(n.id)}
                                         aria-label={`Hapus notifikasi ${n.title}`}
                                     >
@@ -130,18 +143,36 @@ const NotificationItem = React.memo(function NotificationItem({
         </motion.div>
     );
 });
-/* ---------------------------------------------------------------- */
 
+/* ----------------------------------------------------------------
+   NotificationPage (container)
+------------------------------------------------------------------*/
 export default function NotificationPage() {
-    const [notifications, setNotifications] = useState(initialNotifications);
+    const [notifications, setNotifications] = useState(SAMPLE_NOTIFS);
     const reduceMotion = useReducedMotion();
 
-    const dismiss = useCallback((id) => setNotifications((s) => s.filter((n) => n.id !== id)), []);
-    const markRead = useCallback((id) => setNotifications((s) => s.map((n) => (n.id === id ? { ...n, read: true } : n))), []);
-    const markAllRead = useCallback(() => setNotifications((s) => s.map((n) => ({ ...n, read: true }))), []);
-    const clearAll = useCallback(() => setNotifications([]), []);
+    // handlers (memoized)
+    const dismiss = useCallback((id) => {
+        setNotifications((s) => s.filter((n) => n.id !== id));
+    }, []);
 
-    const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications.length, notifications]);
+    const markRead = useCallback((id) => {
+        setNotifications((s) => s.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    }, []);
+
+    const markAllRead = useCallback(() => {
+        setNotifications((s) => s.map((n) => ({ ...n, read: true })));
+    }, []);
+
+    const clearAll = useCallback(() => {
+        // lightweight confirm to avoid accidental clear
+        if (notifications.length === 0) return;
+        const ok = window.confirm("Hapus semua notifikasi? Tindakan ini tidak bisa dibatalkan.");
+        if (!ok) return;
+        setNotifications([]);
+    }, [notifications.length]);
+
+    const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
 
     return (
         <AnimatedPage>
@@ -183,7 +214,7 @@ export default function NotificationPage() {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="hidden md:inline-flex items-center gap-2 rounded-full px-2 py-1 transition-colors duration-300 hover:bg-accent/10 hover:text-accent"
+                                    className="hidden md:inline-flex items-center gap-2 rounded-full px-2 py-1 transition-colors duration-320 hover:bg-accent/10 hover:text-accent"
                                     onClick={markAllRead}
                                     aria-label="Tandai semua notifikasi sebagai dibaca"
                                 >
@@ -205,22 +236,11 @@ export default function NotificationPage() {
                     </header>
 
                     {/* list */}
-                    <motion.section
-                        initial="hidden"
-                        animate="show"
-                        variants={listVariants}
-                        className="space-y-3"
-                    >
+                    <motion.section initial="hidden" animate="show" variants={listVariants} className="space-y-3">
                         <AnimatePresence>
                             {notifications.length > 0 ? (
                                 notifications.map((n) => (
-                                    <NotificationItem
-                                        key={n.id}
-                                        n={n}
-                                        onMarkRead={markRead}
-                                        onDismiss={dismiss}
-                                        reduceMotion={reduceMotion}
-                                    />
+                                    <NotificationItem key={n.id} n={n} onMarkRead={markRead} onDismiss={dismiss} reduceMotion={reduceMotion} />
                                 ))
                             ) : (
                                 <motion.div
