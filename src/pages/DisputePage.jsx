@@ -10,17 +10,10 @@ import AnimatedPage from "@/components/AnimatedPage";
 import { useToast } from "@/components/ui/use-toast";
 import { Helmet } from "react-helmet";
 
-/* Config */
-const ALLOWED_FILE_TYPES = [
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "application/pdf",
-];
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const MAX_DESC_LENGTH = 2000;
 
-/* Helpers */
 const sanitizeText = (v = "") =>
     String(v || "")
         .replace(/<[^>]*>/g, "")
@@ -39,24 +32,20 @@ const hasSuspiciousExtension = (name) => {
     const lower = name.toLowerCase();
     const parts = lower.split(".");
     if (parts.length <= 2) return false;
-
     const lastExt = parts[parts.length - 1];
     const hasDangerous = parts
         .slice(0, -1)
         .some((p) => ["php", "exe", "sh", "bat", "js", "html"].includes(p));
-
     return hasDangerous && ["png", "jpg", "jpeg", "webp", "pdf"].includes(lastExt);
 };
 
 export default function DisputePage() {
     const { toast } = useToast();
     const navigate = useNavigate();
-
     const [jobId] = useState("JOB-123-XYZ");
     const [description, setDescription] = useState("");
     const [files, setFiles] = useState([]);
     const [submitting, setSubmitting] = useState(false);
-
     const fileInputRef = useRef(null);
     const descLength = description.length;
 
@@ -65,15 +54,12 @@ export default function DisputePage() {
         [descLength, submitting]
     );
 
-    /* File Helpers */
     const validateFile = (file) => {
         if (!ALLOWED_FILE_TYPES.includes(file.type)) {
             return `Tipe file tidak didukung: ${file.name}`;
         }
         if (file.size > MAX_FILE_BYTES) {
-            return `Ukuran maksimum ${formatBytes(
-                MAX_FILE_BYTES
-            )} — file ${file.name} terlalu besar`;
+            return `Ukuran maksimum ${formatBytes(MAX_FILE_BYTES)} — file ${file.name} terlalu besar`;
         }
         if (hasSuspiciousExtension(file.name)) {
             return `Ekstensi file mencurigakan: ${file.name}`;
@@ -84,20 +70,16 @@ export default function DisputePage() {
     const addFiles = (fileList) => {
         const arr = Array.from(fileList || []);
         const next = [];
-
         for (const f of arr) {
             const err = validateFile(f);
             if (err) {
                 toast({ title: "File tidak valid", description: err, variant: "destructive" });
                 continue;
             }
-
             const dup = files.find((x) => x.name === f.name && x.size === f.size);
             if (dup) continue;
-
             const isImage = f.type.startsWith("image/");
             const preview = isImage ? URL.createObjectURL(f) : null;
-
             next.push({
                 id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
                 file: f,
@@ -108,7 +90,6 @@ export default function DisputePage() {
                 progress: 0,
             });
         }
-
         if (next.length) setFiles((prev) => [...prev, ...next]);
     };
 
@@ -132,16 +113,13 @@ export default function DisputePage() {
         };
     }, [files]);
 
-    /* Upload with progress */
     const uploadFile = (fileObj, onProgress) =>
         new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             const fd = new FormData();
-
             fd.append("jobId", jobId);
             fd.append("description", sanitizeText(description));
             fd.append("file", fileObj.file);
-
             xhr.open("POST", "/api/disputes");
             xhr.upload.onprogress = (e) => {
                 if (e.lengthComputable) {
@@ -160,28 +138,27 @@ export default function DisputePage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const sanitized = sanitizeText(description);
-
         if (sanitized.length < 10) {
             toast({ title: "Deskripsi terlalu singkat", description: "Minimal 10 karakter." });
             return;
         }
-
         setSubmitting(true);
-
         try {
-            for (const fileObj of files) {
-                await uploadFile(fileObj, (p) => {
-                    setFiles((prev) =>
-                        prev.map((f) => (f.id === fileObj.id ? { ...f, progress: p } : f))
-                    );
-                });
-            }
-
+            await Promise.all(
+                files.map((fileObj) =>
+                    uploadFile(fileObj, (p) => {
+                        setFiles((prev) =>
+                            prev.map((f) => (f.id === fileObj.id ? { ...f, progress: p } : f))
+                        );
+                    })
+                )
+            );
             toast({
                 title: "Laporan terkirim",
                 description: "Tim kami akan meninjau laporan dalam 1×24 jam.",
             });
-
+            setDescription("");
+            setFiles([]);
             setTimeout(() => navigate(-1), 1200);
         } catch (err) {
             console.error(err);
@@ -195,14 +172,12 @@ export default function DisputePage() {
             <Helmet>
                 <title>Ajukan Sengketa — Kerjain</title>
             </Helmet>
-
-            <div className="relative min-h-dvh w-full px-4 py-6">
-                {/* Header */}
+            <div className="relative min-h-dvh w-full px-3 py-4 sm:px-4 sm:py-6">
                 <motion.div
                     initial={{ opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.32 }}
-                    className="mb-6 flex items-center gap-3"
+                    transition={{ duration: 0.3 }}
+                    className="mb-4 flex items-center gap-2"
                 >
                     <Link to={-1}>
                         <Button
@@ -210,58 +185,48 @@ export default function DisputePage() {
                             size="icon"
                             className="rounded-full bg-card/40 backdrop-blur-md ring-1 ring-border text-muted-foreground hover:text-accent-foreground hover:bg-accent/12 transition-colors duration-300"
                         >
-                            <ArrowLeft className="h-5 w-5" />
+                            <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
-                    <h1 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                    <h1 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
                         <span className="text-accent">⚑</span> Laporkan Masalah
                     </h1>
                 </motion.div>
-
-                {/* Card */}
-                <Card className="rounded-3xl border border-border/40 bg-card/50 shadow-xl backdrop-blur-xl">
-                    <CardContent className="p-6 space-y-5">
-                        {/* Warning */}
-                        <div className="flex items-start gap-4 rounded-xl border border-destructive/40 bg-destructive/10 p-4">
-                            <AlertTriangle className="h-6 w-6 text-destructive mt-1" />
+                <Card className="rounded-2xl sm:rounded-3xl border border-border/40 bg-card/50 shadow-xl backdrop-blur-xl">
+                    <CardContent className="p-4 sm:p-6 space-y-4">
+                        <div className="flex items-start gap-3 rounded-xl border border-destructive/40 bg-destructive/10 p-3 sm:p-4">
+                            <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6 text-destructive mt-1" />
                             <div>
-                                <h3 className="font-semibold text-destructive">Penting</h3>
-                                <p className="text-sm text-muted-foreground">
+                                <h3 className="font-semibold text-destructive text-sm sm:text-base">Penting</h3>
+                                <p className="text-xs sm:text-sm text-muted-foreground">
                                     Jelaskan masalah dengan jelas. Lampirkan bukti bila ada.
                                 </p>
                             </div>
                         </div>
-
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            {/* ID */}
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <Label className="text-xs text-muted-foreground">ID Pekerjaan</Label>
-                                <p className="mt-1 rounded-md bg-background/40 px-3 py-1 font-mono text-sm text-foreground/80">
+                                <p className="mt-1 rounded-md bg-background/40 px-3 py-1 font-mono text-xs sm:text-sm text-foreground/80">
                                     {jobId}
                                 </p>
                             </div>
-
-                            {/* Description */}
                             <div>
                                 <Label className="text-xs text-muted-foreground">Detail Masalah</Label>
                                 <textarea
-                                    rows="5"
+                                    rows="4"
                                     required
                                     value={description}
                                     onChange={(e) => setDescription(sanitizeText(e.target.value))}
-                                    className="mt-1 w-full rounded-2xl border border-border/40 bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-accent transition"
+                                    className="mt-1 w-full rounded-xl border border-border/40 bg-background/40 px-3 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-accent transition"
                                     placeholder="Contoh: Pekerja tidak menyelesaikan..."
                                 />
-                                <p className="mt-1 text-right text-xs text-muted-foreground">
+                                <p className="mt-1 text-right text-[10px] sm:text-xs text-muted-foreground">
                                     {descLength}/{MAX_DESC_LENGTH}
                                 </p>
                             </div>
-
-                            {/* File input */}
                             <div>
                                 <Label className="text-xs text-muted-foreground">Lampiran Bukti</Label>
-                                <div className="mt-2 flex items-center gap-3">
+                                <div className="mt-2 flex items-center gap-2">
                                     <input
                                         ref={fileInputRef}
                                         type="file"
@@ -273,37 +238,39 @@ export default function DisputePage() {
                                     />
                                     <label
                                         htmlFor="file-upload"
-                                        className="cursor-pointer relative flex items-center justify-center rounded-2xl bg-card/40 backdrop-blur-xl border border-border/40 shadow-lg px-4 py-2 text-sm font-medium text-foreground transition duration-300 hover:bg-accent/20 hover:text-accent-foreground active:scale-[0.97]"
+                                        className="cursor-pointer flex items-center justify-center rounded-xl bg-card/40 backdrop-blur-xl border border-border/40 shadow px-3 py-1.5 text-xs sm:text-sm font-medium text-foreground transition duration-300 hover:bg-accent/20 hover:text-accent-foreground active:scale-[0.97]"
                                     >
-                                        <span>Pilih File</span>
+                                        Pilih File
                                     </label>
-                                    <span className="text-sm text-muted-foreground">
-                                        {files.length > 0 ? `${files.length} file dipilih` : "Tidak ada file"}
+                                    <span className="text-xs sm:text-sm text-muted-foreground">
+                                        {files.length > 0 ? `${files.length} file` : "Tidak ada file"}
                                     </span>
                                 </div>
-
-                                {/* List file */}
                                 {files.length > 0 && (
-                                    <div className="mt-3 space-y-2">
+                                    <div className="mt-2 space-y-2">
                                         {files.map((f) => (
                                             <div
                                                 key={f.id}
-                                                className="flex items-center gap-3 rounded-xl border border-border/40 bg-background/40 backdrop-blur-md p-3 shadow-md"
+                                                className="flex items-center gap-2 rounded-xl border border-border/40 bg-background/40 backdrop-blur-md p-2 shadow"
                                             >
                                                 {f.preview ? (
                                                     <img
                                                         src={f.preview}
                                                         alt={f.name}
-                                                        className="h-12 w-12 object-cover rounded-lg"
+                                                        className="h-10 w-10 object-cover rounded-md"
                                                     />
                                                 ) : (
-                                                    <div className="h-12 w-12 flex items-center justify-center rounded-lg bg-secondary/30 text-xs font-semibold">
+                                                    <div className="h-10 w-10 flex items-center justify-center rounded-md bg-secondary/30 text-[10px] font-semibold">
                                                         PDF
                                                     </div>
                                                 )}
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-medium text-foreground truncate">{f.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{formatBytes(f.size)}</p>
+                                                    <p className="text-xs sm:text-sm font-medium text-foreground truncate">
+                                                        {f.name}
+                                                    </p>
+                                                    <p className="text-[10px] sm:text-xs text-muted-foreground">
+                                                        {formatBytes(f.size)}
+                                                    </p>
                                                     {f.progress > 0 && (
                                                         <div className="mt-1 h-1 w-full rounded bg-muted overflow-hidden">
                                                             <motion.div
@@ -320,23 +287,21 @@ export default function DisputePage() {
                                                     onClick={() => removeFile(f.id)}
                                                     className="text-destructive hover:opacity-80 transition"
                                                 >
-                                                    <X className="h-4 w-4" />
+                                                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
                                 )}
                             </div>
-
-                            {/* Submit */}
                             <Button
                                 type="submit"
                                 size="lg"
-                                className="w-full rounded-2xl bg-primary font-semibold text-primary-foreground hover:bg-primary/90 transition"
+                                className="w-full rounded-xl bg-primary font-semibold text-primary-foreground hover:bg-primary/90 transition duration-300"
                                 disabled={!canSubmit}
                             >
                                 {submitting ? "Mengirim..." : "Kirim Laporan"}
-                                <Send className="ml-2 h-5 w-5" />
+                                <Send className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                             </Button>
                         </form>
                     </CardContent>

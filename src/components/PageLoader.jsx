@@ -6,41 +6,50 @@ import { Loader2 } from "lucide-react";
 const PageLoader = () => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background">
-            {/* Background grid pattern */}
-            <div className="absolute inset-0 bg-grid-small [mask-image:radial-gradient(circle_at_center,white,transparent)] opacity-20 pointer-events-none" />
+            {/* Background grid with liquid glass mask */}
+            <div className="absolute inset-0 bg-grid-small [mask-image:radial-gradient(circle_at_center,white,transparent)] opacity-25 pointer-events-none" />
 
             {/* Glassmorphic loader container */}
             <motion.div
-                initial={{ opacity: 0, scale: 0.85, y: 20 }}
+                initial={{ opacity: 0, scale: 0.9, y: 15 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.85, y: 20 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="relative flex flex-col items-center gap-5 rounded-2xl bg-card/40 px-8 py-10 shadow-xl backdrop-blur-xl border border-border/50"
+                exit={{ opacity: 0, scale: 0.9, y: 15 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="
+          relative flex flex-col items-center gap-4 sm:gap-5
+          rounded-2xl sm:rounded-3xl
+          bg-card/40 px-6 py-7 sm:px-8 sm:py-10
+          shadow-xl backdrop-blur-2xl
+          border border-border/50
+        "
             >
-                {/* Animated loader */}
+                {/* Loader icon */}
                 <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
                 >
-                    <Loader2 className="w-12 h-12 text-primary" />
+                    <Loader2 className="w-8 h-8 sm:w-12 sm:h-12 text-primary" />
                 </motion.div>
 
-                {/* Animated pulse text */}
+                {/* Loading text */}
                 <motion.p
-                    initial={{ opacity: 0.6 }}
-                    animate={{ opacity: [0.6, 1, 0.6] }}
+                    initial={{ opacity: 0.7 }}
+                    animate={{ opacity: [0.7, 1, 0.7] }}
                     transition={{ repeat: Infinity, duration: 2 }}
-                    className="text-base font-medium text-foreground tracking-wide"
+                    className="
+            text-sm sm:text-base font-medium 
+            text-foreground tracking-wide
+          "
                 >
                     Memuat...
                 </motion.p>
 
-                {/* Decorative glowing ring */}
+                {/* Glowing accent ring */}
                 <motion.div
-                    initial={{ scale: 0.9, opacity: 0.5 }}
-                    animate={{ scale: [0.9, 1.05, 0.9], opacity: [0.5, 0.8, 0.5] }}
+                    initial={{ scale: 0.9, opacity: 0.4 }}
+                    animate={{ scale: [0.9, 1.05, 0.9], opacity: [0.4, 0.75, 0.4] }}
                     transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                    className="absolute -inset-4 rounded-3xl border-2 border-primary/40 blur-xl"
+                    className="absolute -inset-3 sm:-inset-4 rounded-3xl border-2 border-accent/40 blur-xl"
                 />
             </motion.div>
         </div>

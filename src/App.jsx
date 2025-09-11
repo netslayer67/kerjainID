@@ -30,6 +30,7 @@ const NotificationPage = lazy(() => import('@/pages/NotificationPage'));
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
 const SignupPage = lazy(() => import('@/pages/SignupPage'));
 const JobPage = lazy(() => import('@/pages/JobPage'));
+const JobStatusPage = lazy(() => import('@/pages/JobStatusPage'));
 
 // Smooth, premium duration across the app
 const TRANSITION_MS = 320; // 300–350ms sweet spot
@@ -139,6 +140,7 @@ export default function App() {
                             <Route path="/register" element={<PageWrapper><SignupPage /></PageWrapper>} />
                             <Route path="/verify" element={<PageWrapper><VerificationPage /></PageWrapper>} />
                             <Route path="/select-role" element={<PageWrapper><RoleSelectionPage /></PageWrapper>} />
+                            <Route path="/job/:id/status" element={<PageWrapper><JobStatusPage /></PageWrapper>} />
 
                             {/* Protected with AppLayout */}
                             <Route element={<AppLayout />}>

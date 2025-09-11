@@ -1,267 +1,219 @@
-// src/components/NegotiationModal.jsx
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageSquare, DollarSign, X as XIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { X, Clock, ShieldCheck, AlertCircle } from "lucide-react";
 
-/**
- * NegotiationModal (refactor)
- * - Liquid glass look via bg-card/80 + backdrop-blur-xl
- * - Sanitized numeric input only
- * - Quick offers, history list, accept/reject flows
- * - Reduced-motion friendly
- * - Accessible (aria attrs)
- *
- * Props:
- * - role: "worker" | "client"
- * - job: object (optional)
- * - open: boolean
- * - onClose: fn()
- * - proposals: array of { ts, from, amount, status }
- * - onSendOffer: fn(amount)
- * - onAccept: fn(proposal)
- * - onReject: fn(proposal)
- * - locked: boolean (disable actions)
- */
+// Sanitizer input (angka only)
+const safeInput = (val = "") =>
+    String(val || "")
+        .replace(/[^0-9]/g, "")
+        .slice(0, 9);
 
-const formatCurrency = (num) =>
-    new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num || 0);
-
-// sanitize input for numeric-only (returns string of digits)
-const sanitizeNumeric = (v = "") => String(v).replace(/[^\d]/g, "").slice(0, 12);
-
-// small visual pill
-const SmallPill = ({ children, className = "" }) => (
-    <span
-        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${className}`}
-        role="status"
-    >
-        {children}
-    </span>
-);
-
-export default React.memo(function NegotiationModal({
-    role = "worker",
-    job = null,
-    open = false,
-    onClose = () => { },
-    proposals = [],
-    onSendOffer = () => { },
-    onAccept = () => { },
-    onReject = () => { },
-    locked = false,
-}) {
-    const [counterValue, setCounterValue] = useState("");
-    const [localProposals, setLocalProposals] = useState(() => proposals || []);
+const NegotiationModalCompact = ({
+    isOpen,
+    onClose,
+    jobFee = 100000,
+    role = "worker", // "worker" | "client"
+    initialOffers = [],
+}) => {
+    const [offers, setOffers] = useState(initialOffers);
+    const [inputValue, setInputValue] = useState("");
+    const [notification, setNotification] = useState(null);
+    const prevOpen = useRef(false);
 
     useEffect(() => {
-        setLocalProposals(proposals || []);
-    }, [proposals]);
+        if (isOpen && !prevOpen.current) {
+            setOffers(initialOffers || []);
+            setNotification(null);
+        }
+        prevOpen.current = isOpen;
+    }, [isOpen, initialOffers]);
 
-    // quick amounts derived from job.fee
-    const quickAmounts = useMemo(() => {
-        const base = Number(job?.fee || 0);
-        if (!base) return [];
-        return [0.8, 1, 1.2].map((m) => Math.round(base * m));
-    }, [job?.fee]);
+    const addOffer = (amount, byRole) => {
+        const amt = Number(amount);
+        if (!amt || isNaN(amt)) return;
+        const newOffer = {
+            id: Date.now(),
+            amount: amt,
+            by: byRole,
+            status: "pending",
+            createdAt: Date.now(),
+            expiresAt: Date.now() + 60000,
+        };
+        setOffers((prev) => [...prev, newOffer]);
+        setNotification(
+            `Rp${amt.toLocaleString("id-ID")} dikirim oleh ${byRole === "worker" ? "Pekerja" : "Klien"
+            }`
+        );
+    };
 
-    const handleSendOffer = useCallback(() => {
-        if (locked) return;
-        const amount = Number(sanitizeNumeric(counterValue)) || Number(job?.fee || 0);
-        if (!amount || amount <= 0) return;
-        const proposal = { ts: Date.now(), from: role, amount, status: "pending" };
-        setLocalProposals((p) => [proposal, ...p]);
-        onSendOffer?.(amount);
-        setCounterValue("");
-    }, [counterValue, job?.fee, onSendOffer, role, locked]);
+    // auto expire
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setOffers((prev) =>
+                prev.map((o) =>
+                    o.status === "pending" && o.expiresAt < Date.now()
+                        ? { ...o, status: "expired" }
+                        : o
+                )
+            );
+        }, 4000);
+        return () => clearInterval(interval);
+    }, []);
 
-    const handleQuickOffer = useCallback(
-        (amt) => {
-            if (locked) return;
-            const proposal = { ts: Date.now(), from: role, amount: amt, status: "pending" };
-            setLocalProposals((p) => [proposal, ...p]);
-            onSendOffer?.(amt);
-        },
-        [onSendOffer, role, locked]
-    );
+    const acceptOffer = (id) => {
+        setOffers((prev) =>
+            prev.map((o) => (o.id === id ? { ...o, status: "accepted" } : o))
+        );
+        setNotification("Penawaran diterima ✔️");
+    };
 
-    const handleAccept = useCallback(
-        (p) => {
-            if (locked) return;
-            setLocalProposals((prev) => prev.map((x) => (x.ts === p.ts ? { ...x, status: "accepted" } : x)));
-            onAccept?.(p);
-        },
-        [onAccept, locked]
-    );
+    const rejectOffer = (id) => {
+        setOffers((prev) =>
+            prev.map((o) => (o.id === id ? { ...o, status: "rejected" } : o))
+        );
+        setNotification("Penawaran ditolak ✖️");
+    };
 
-    const handleReject = useCallback(
-        (p) => {
-            if (locked) return;
-            setLocalProposals((prev) => prev.map((x) => (x.ts === p.ts ? { ...x, status: "rejected" } : x)));
-            onReject?.(p);
-        },
-        [onReject, locked]
-    );
-
-    // motion variants
-    const backdrop = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } };
-    const panel = { initial: { y: 20, opacity: 0 }, animate: { y: 0, opacity: 1 }, exit: { y: 20, opacity: 0 } };
+    const quickOffers = [0.8, 1.0, 1.2];
 
     return (
         <AnimatePresence>
-            {open && (
+            {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-4 md:p-6"
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
+                    className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md px-2 sm:px-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
                 >
-                    {/* backdrop */}
-                    <motion.button
-                        aria-hidden
-                        onClick={() => !locked && onClose()}
-                        className="absolute inset-0 bg-black/40"
-                        variants={backdrop}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                    />
-
-                    {/* panel */}
                     <motion.div
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="negotiation-title"
-                        variants={panel}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                        transition={{ duration: 0.28 }}
-                        className="w-full max-w-md rounded-2xl border border-border bg-card/90 backdrop-blur-xl p-4 shadow-2xl"
+                        className="relative w-full max-w-md rounded-2xl bg-background/80 dark:bg-zinc-900/70 backdrop-blur-2xl p-4 sm:p-6 shadow-xl border border-border"
+                        initial={{ y: 50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 50, opacity: 0 }}
+                        transition={{ duration: 0.35, ease: "easeOut" }}
                     >
-                        {/* header */}
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="flex items-center gap-3">
-                                <MessageSquare className="h-5 w-5 text-accent" />
-                                <div>
-                                    <div id="negotiation-title" className="text-sm font-semibold text-foreground">
-                                        Negosiasi
-                                    </div>
-                                    <div className="text-xs text-muted-foreground truncate" title={job?.title || ""}>
-                                        {job?.title ? job.title : "—"}
-                                    </div>
-                                </div>
+                        {/* Close */}
+                        <button
+                            className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors duration-300"
+                            onClick={onClose}
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <h2 className="text-base sm:text-lg font-semibold mb-3 text-foreground">
+                            Negosiasi
+                        </h2>
+
+                        {notification && (
+                            <div className="mb-3 flex items-center gap-1.5 text-xs sm:text-sm text-accent">
+                                <AlertCircle size={14} /> {notification}
                             </div>
+                        )}
 
-                            <div className="flex items-center gap-2">
-                                <SmallPill className="bg-background/10 text-muted-foreground">{role}</SmallPill>
-                                <button
-                                    onClick={() => !locked && onClose()}
-                                    aria-label="Tutup"
-                                    className="rounded-md p-1 text-xs text-muted-foreground hover:text-accent transition-colors duration-300"
-                                >
-                                    <XIcon className="h-4 w-4" />
-                                </button>
-                            </div>
-                        </div>
+                        {/* List Offers */}
+                        <div className="space-y-2 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
+                            {offers.map((offer) => {
+                                const isOpponent =
+                                    (role === "client" && offer.by === "worker") ||
+                                    (role === "worker" && offer.by === "client");
 
-                        {/* history */}
-                        <div className="mt-3 max-h-44 overflow-y-auto pr-2 space-y-2">
-                            {localProposals.length === 0 ? (
-                                <div className="text-xs text-muted-foreground">Belum ada penawaran.</div>
-                            ) : (
-                                localProposals.map((p) => {
-                                    const accepted = p.status === "accepted";
-                                    const rejected = p.status === "rejected";
-                                    return (
-                                        <div
-                                            key={p.ts}
-                                            className={`flex items-center justify-between gap-3 rounded-lg p-2 border ${accepted ? "border-accent/80 bg-accent/8" : "border-border/40 bg-background/10"
-                                                }`}
-                                        >
-                                            <div className="min-w-0">
-                                                <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{p.from}</div>
-                                                <div className="text-sm font-medium text-foreground">{formatCurrency(p.amount)}</div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                {p.status === "pending" &&
-                                                    ((role === "worker" && p.from === "client") || (role === "client" && p.from === "worker")) ? (
-                                                    <>
-                                                        <Button size="sm" disabled={locked} onClick={() => handleAccept(p)}>
-                                                            Terima
-                                                        </Button>
-                                                        <Button size="sm" variant="outline" disabled={locked} onClick={() => handleReject(p)}>
-                                                            Tolak
-                                                        </Button>
-                                                    </>
-                                                ) : (
-                                                    <div className={`text-xs ${accepted ? "text-accent" : rejected ? "text-destructive" : "text-muted-foreground"}`}>
-                                                        {p.status}
-                                                    </div>
-                                                )}
-                                            </div>
+                                return (
+                                    <motion.div
+                                        key={offer.id}
+                                        className={`p-2 sm:p-3 rounded-xl border flex justify-between items-center text-xs sm:text-sm transition-colors duration-300 ${offer.status === "accepted"
+                                            ? "bg-green-500/20 border-green-500/40"
+                                            : offer.status === "rejected"
+                                                ? "bg-red-500/20 border-red-500/40"
+                                                : offer.status === "expired"
+                                                    ? "bg-muted/30 border-muted/40"
+                                                    : "bg-secondary/20 border-secondary/40"
+                                            }`}
+                                        initial={{ opacity: 0, y: 6 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                    >
+                                        <div>
+                                            <p className="font-medium">
+                                                Rp{(Number(offer.amount) || 0).toLocaleString("id-ID")}
+                                            </p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                {offer.by === "worker" ? "Pekerja" : "Klien"}
+                                            </p>
                                         </div>
-                                    );
-                                })
+
+                                        <div className="flex items-center gap-1.5">
+                                            {offer.status === "pending" && isOpponent && (
+                                                <>
+                                                    <button
+                                                        className="px-2 py-1 rounded-lg bg-accent text-[11px] text-secondary hover:bg-accent/90 transition-colors duration-300"
+                                                        onClick={() => acceptOffer(offer.id)}
+                                                    >
+                                                        Terima
+                                                    </button>
+                                                    <button
+                                                        className="px-2 py-1 rounded-lg bg-red-500 text-[11px] text-secondary hover:bg-red-600 transition-colors duration-300"
+                                                        onClick={() => rejectOffer(offer.id)}
+                                                    >
+                                                        Tolak
+                                                    </button>
+                                                </>
+                                            )}
+                                            {offer.status === "pending" && (
+                                                <Clock size={13} className="text-muted-foreground" />
+                                            )}
+                                            {offer.status === "accepted" && (
+                                                <ShieldCheck size={14} className="text-green-500" />
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                            {offers.length === 0 && (
+                                <p className="text-xs sm:text-sm text-muted-foreground text-center">
+                                    Belum ada penawaran.
+                                </p>
                             )}
                         </div>
 
-                        {/* quick offers (worker only) */}
-                        {role === "worker" && (
-                            <div className="mt-3">
-                                <div className="text-xs font-medium text-muted-foreground mb-2">Penawaran cepat</div>
-                                <div className="flex flex-wrap gap-2">
-                                    {quickAmounts.length ? (
-                                        quickAmounts.map((amt) => (
-                                            <Button
-                                                key={amt}
-                                                size="sm"
-                                                variant="outline"
-                                                disabled={locked}
-                                                onClick={() => handleQuickOffer(amt)}
-                                                className="hover:bg-accent/8 transition duration-300"
-                                            >
-                                                {formatCurrency(amt)}
-                                            </Button>
-                                        ))
-                                    ) : (
-                                        <div className="text-xs text-muted-foreground">Tidak tersedia</div>
-                                    )}
-                                </div>
+                        {/* Input + QuickOffer */}
+                        <div className="mt-4 space-y-2">
+                            <div className="flex gap-2">
+                                {quickOffers.map((mult) => (
+                                    <button
+                                        key={mult}
+                                        onClick={() => addOffer(Math.round(jobFee * mult), role)}
+                                        className="flex-1 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs sm:text-sm hover:bg-primary/90 transition-colors duration-300"
+                                    >
+                                        Rp{Math.round(jobFee * mult).toLocaleString("id-ID")}
+                                    </button>
+                                ))}
                             </div>
-                        )}
-
-                        {/* counter input */}
-                        {role === "worker" && (
-                            <div className="mt-3 flex gap-2">
-                                <div className="flex-1">
-                                    <label className="sr-only">Jumlah tawaran</label>
-                                    <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-background/30 px-3 py-2">
-                                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                                        <input
-                                            inputMode="numeric"
-                                            pattern="[0-9]*"
-                                            placeholder={job?.fee ? formatCurrency(job.fee) : "Masukkan jumlah"}
-                                            value={counterValue}
-                                            disabled={locked}
-                                            onChange={(e) => setCounterValue(sanitizeNumeric(e.target.value))}
-                                            className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-                                            aria-label="Masukkan jumlah tawaran"
-                                            maxLength={12}
-                                        />
-                                    </div>
-                                </div>
-
-                                <Button disabled={locked} onClick={handleSendOffer} className="whitespace-nowrap">
-                                    <DollarSign className="h-4 w-4 mr-1" /> Kirim
-                                </Button>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(safeInput(e.target.value))}
+                                    placeholder="Nominal"
+                                    className="flex-1 px-2 sm:px-3 py-1.5 rounded-lg bg-muted/40 border border-border text-xs sm:text-sm focus:ring-2 focus:ring-accent outline-none transition-colors duration-300"
+                                />
+                                <button
+                                    onClick={() => {
+                                        if (inputValue) {
+                                            addOffer(Number(inputValue), role);
+                                            setInputValue("");
+                                        }
+                                    }}
+                                    className="px-3 sm:px-4 py-1.5 rounded-lg bg-accent text-secondary text-xs sm:text-sm hover:bg-accent/90 transition-colors duration-300"
+                                >
+                                    Kirim
+                                </button>
                             </div>
-                        )}
-
+                        </div>
                     </motion.div>
                 </motion.div>
             )}
         </AnimatePresence>
     );
-});
+};
+
+export default NegotiationModalCompact;

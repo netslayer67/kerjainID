@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import AnimatedPage from "@/components/AnimatedPage";
 
-/* ---------------- sample data (replace with API) ---------------- */
+/* ---------------- sample data ---------------- */
 const SAMPLE_NOTIFS = [
     { id: 1, icon: Wallet, title: "Pembayaran berhasil", text: "Rp 150.000 dari Budi", time: "1 jam lalu", read: false },
     { id: 2, icon: Star, title: "Rating baru", text: "Budi memberi Anda ★★★★★", time: "2 jam lalu", read: false },
@@ -30,14 +30,14 @@ const SAMPLE_NOTIFS = [
     { id: 4, icon: Wallet, title: "Penarikan diproses", text: "Rp 200.000 sedang diproses", time: "2 hari lalu", read: true },
 ];
 
-/* ---------------- small helpers ---------------- */
+/* ---------------- utils ---------------- */
 const sanitizeText = (v = "") =>
     String(v)
-        .replace(/<[^>]*>/g, "") // remove HTML tags
-        .replace(/https?:\/\/[^\s]+/gi, "") // remove links
+        .replace(/<[^>]*>/g, "")
+        .replace(/https?:\/\/[^\s]+/gi, "")
         .trim();
 
-const DURATION = 0.32; // 320ms
+const DURATION = 0.32;
 
 const listVariants = {
     hidden: { opacity: 0 },
@@ -50,11 +50,7 @@ const itemMotion = (reduced) => ({
     exit: { opacity: 0, x: -60, transition: { duration: 0.28 } },
 });
 
-/* ----------------------------------------------------------------
-   NotificationItem (memoized presentational)
-   - props: n, onMarkRead(id), onDismiss(id)
-   - accessible, compact, uses tokens for colors & transitions
-------------------------------------------------------------------*/
+/* ---------------- NotificationItem ---------------- */
 const NotificationItem = React.memo(function NotificationItem({ n, onMarkRead, onDismiss, reduceMotion }) {
     const Icon = n.icon || BellRing;
     const read = !!n.read;
@@ -85,40 +81,43 @@ const NotificationItem = React.memo(function NotificationItem({ n, onMarkRead, o
             ${read ? "opacity-90 hover:opacity-95" : "ring-1 ring-primary/20 shadow-sm hover:shadow-md"}
           `}
                 >
-                    <CardContent className="flex items-start gap-3 p-4">
+                    <CardContent className="flex items-start gap-3 p-3 sm:p-4">
                         <div
                             aria-hidden
-                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-350
+                            className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-350
                 ${read ? "bg-secondary/20 text-muted-foreground" : "bg-accent/10 text-accent"}
               `}
                         >
-                            <Icon className="h-5 w-5" />
+                            <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
 
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start justify-between gap-2 sm:gap-3">
                                 <div className="min-w-0">
-                                    <p className="truncate text-sm font-medium text-foreground">{sanitizeText(n.title)}</p>
-                                    <p className="mt-1 truncate text-xs text-muted-foreground">{sanitizeText(n.text)}</p>
+                                    <p className="truncate text-sm font-medium text-foreground">
+                                        {sanitizeText(n.title)}
+                                    </p>
+                                    <p className="mt-0.5 sm:mt-1 truncate text-xs text-muted-foreground">
+                                        {sanitizeText(n.text)}
+                                    </p>
                                 </div>
 
-                                <div className="flex flex-col items-end gap-2">
-                                    <time className="text-[11px] text-muted-foreground" dateTime={n.date || ""} aria-hidden>
+                                <div className="flex flex-col items-end gap-1">
+                                    <time className="text-[10px] sm:text-[11px] text-muted-foreground" aria-hidden>
                                         {n.time}
                                     </time>
-
-                                    {!read ? (
+                                    {!read && (
                                         <span className="inline-flex h-2 w-2 rounded-full bg-accent ring-2 ring-card/40" aria-hidden />
-                                    ) : null}
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
                                 {!read ? (
                                     <Button
                                         size="sm"
                                         variant="outline"
-                                        className="h-7 px-2 text-xs transition-colors duration-320 hover:bg-accent hover:text-accent-foreground"
+                                        className="h-7 px-2 text-xs rounded-full transition-colors duration-320 hover:bg-accent hover:text-accent-foreground"
                                         onClick={() => onMarkRead(n.id)}
                                         aria-label={`Tandai notifikasi ${n.title} sebagai dibaca`}
                                     >
@@ -128,7 +127,7 @@ const NotificationItem = React.memo(function NotificationItem({ n, onMarkRead, o
                                     <Button
                                         size="sm"
                                         variant="ghost"
-                                        className="h-7 px-2 text-xs transition-colors duration-320 hover:text-destructive"
+                                        className="h-7 px-2 text-xs rounded-full transition-colors duration-320 hover:text-destructive"
                                         onClick={() => onDismiss(n.id)}
                                         aria-label={`Hapus notifikasi ${n.title}`}
                                     >
@@ -144,14 +143,11 @@ const NotificationItem = React.memo(function NotificationItem({ n, onMarkRead, o
     );
 });
 
-/* ----------------------------------------------------------------
-   NotificationPage (container)
-------------------------------------------------------------------*/
+/* ---------------- NotificationPage ---------------- */
 export default function NotificationPage() {
     const [notifications, setNotifications] = useState(SAMPLE_NOTIFS);
     const reduceMotion = useReducedMotion();
 
-    // handlers (memoized)
     const dismiss = useCallback((id) => {
         setNotifications((s) => s.filter((n) => n.id !== id));
     }, []);
@@ -165,7 +161,6 @@ export default function NotificationPage() {
     }, []);
 
     const clearAll = useCallback(() => {
-        // lightweight confirm to avoid accidental clear
         if (notifications.length === 0) return;
         const ok = window.confirm("Hapus semua notifikasi? Tindakan ini tidak bisa dibatalkan.");
         if (!ok) return;
@@ -181,10 +176,10 @@ export default function NotificationPage() {
             </Helmet>
 
             <MotionConfig reducedMotion="user">
-                <div className="relative mx-auto max-w-lg px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+                <div className="relative mx-auto max-w-lg px-3 sm:px-4 pb-16 pt-4 sm:pt-6">
                     {/* header */}
-                    <header className="relative z-10 mb-6 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                    <header className="relative z-10 mb-4 sm:mb-6 flex items-center justify-between">
+                        <div className="flex items-center gap-2 sm:gap-3">
                             <Link to={-1} aria-label="Kembali">
                                 <Button
                                     variant="ghost"
@@ -196,51 +191,49 @@ export default function NotificationPage() {
                             </Link>
 
                             <div>
-                                <h1 className="text-lg font-semibold text-foreground">Notifikasi</h1>
-                                <p className="text-xs text-muted-foreground">Tetap terupdate — geser untuk aksi cepat.</p>
+                                <h1 className="text-base sm:text-lg font-semibold text-foreground">Notifikasi</h1>
+                                <p className="text-[11px] sm:text-xs text-muted-foreground">
+                                    Geser kartu untuk aksi cepat
+                                </p>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <div className="hidden md:flex items-center gap-3">
-                                <span className="text-xs text-muted-foreground">Belum dibaca</span>
-                                <div className="inline-flex items-center rounded-full bg-card/40 px-3 py-1 text-sm font-medium text-foreground ring-1 ring-border/40">
-                                    <Bell className="h-4 w-4 mr-2 text-accent" />
-                                    <span>{unreadCount}</span>
-                                </div>
-                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="hidden sm:inline-flex items-center gap-1.5 rounded-full px-2 py-1 transition-colors duration-320 hover:bg-accent/10 hover:text-accent"
+                                onClick={markAllRead}
+                                aria-label="Tandai semua notifikasi sebagai dibaca"
+                            >
+                                <Check className="h-4 w-4" />
+                                <span className="text-xs">Semua</span>
+                            </Button>
 
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="hidden md:inline-flex items-center gap-2 rounded-full px-2 py-1 transition-colors duration-320 hover:bg-accent/10 hover:text-accent"
-                                    onClick={markAllRead}
-                                    aria-label="Tandai semua notifikasi sebagai dibaca"
-                                >
-                                    <Check className="h-4 w-4" />
-                                    <span className="text-xs">Tandai semua</span>
-                                </Button>
-
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="rounded-full bg-card/30 backdrop-blur-md hover:bg-card/50 transition-colors duration-300"
-                                    onClick={clearAll}
-                                    aria-label="Bersihkan semua notifikasi"
-                                >
-                                    <Trash2 className="h-4 w-4 text-foreground" />
-                                </Button>
-                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="rounded-full bg-card/30 backdrop-blur-md hover:bg-card/50 transition-colors duration-300"
+                                onClick={clearAll}
+                                aria-label="Bersihkan semua notifikasi"
+                            >
+                                <Trash2 className="h-4 w-4 text-foreground" />
+                            </Button>
                         </div>
                     </header>
 
                     {/* list */}
-                    <motion.section initial="hidden" animate="show" variants={listVariants} className="space-y-3">
+                    <motion.section initial="hidden" animate="show" variants={listVariants} className="space-y-2 sm:space-y-3">
                         <AnimatePresence>
                             {notifications.length > 0 ? (
                                 notifications.map((n) => (
-                                    <NotificationItem key={n.id} n={n} onMarkRead={markRead} onDismiss={dismiss} reduceMotion={reduceMotion} />
+                                    <NotificationItem
+                                        key={n.id}
+                                        n={n}
+                                        onMarkRead={markRead}
+                                        onDismiss={dismiss}
+                                        reduceMotion={reduceMotion}
+                                    />
                                 ))
                             ) : (
                                 <motion.div
@@ -250,17 +243,22 @@ export default function NotificationPage() {
                                     exit={{ opacity: 0, y: -8 }}
                                     className="mt-8 text-center"
                                 >
-                                    <div className="mx-auto max-w-xs rounded-2xl border border-dashed border-border/50 bg-card/50 backdrop-blur-md p-8">
-                                        <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent mb-3">
-                                            <BellRing className="h-6 w-6" />
+                                    <div className="mx-auto max-w-xs rounded-2xl border border-dashed border-border/50 bg-card/50 backdrop-blur-md p-6 sm:p-8">
+                                        <div className="mx-auto inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-accent/10 text-accent mb-2 sm:mb-3">
+                                            <BellRing className="h-5 w-5 sm:h-6 sm:w-6" />
                                         </div>
-                                        <p className="text-sm font-medium text-foreground">Semua notifikasi sudah dibersihkan 🎉</p>
-                                        <p className="mt-2 text-xs text-muted-foreground">Tidak ada notifikasi terbaru.</p>
+                                        <p className="text-sm font-medium text-foreground">
+                                            Semua notifikasi sudah dibersihkan 🎉
+                                        </p>
+                                        <p className="mt-1 text-xs text-muted-foreground">Tidak ada notifikasi terbaru.</p>
 
                                         <div className="mt-4 flex justify-center">
                                             <Link to="/client/dashboard">
-                                                <Button size="sm" className="rounded-full bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 transition-colors duration-300">
-                                                    Kembali ke Beranda
+                                                <Button
+                                                    size="sm"
+                                                    className="rounded-full bg-primary px-3 sm:px-4 py-1.5 sm:py-2 text-primary-foreground hover:bg-primary/90 transition-colors duration-300"
+                                                >
+                                                    Beranda
                                                 </Button>
                                             </Link>
                                         </div>

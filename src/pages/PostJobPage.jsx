@@ -1,24 +1,48 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// src/pages/PostJobPage.jsx
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowLeft, Zap, FileText, WalletMinimal, HandCoins } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
-// --- Input sanitization helper ---
-const sanitizeInput = (value) =>
-    value
-        .replace(/<.*?>/g, "")
+/* ---------------- sanitization helpers ---------------- */
+const sanitizeLight = (v = "") =>
+    String(v || "")
+        .replace(/<[^>]*>/g, "")
         .replace(/(javascript:|data:|vbscript:)/gi, "")
-        .replace(/https?:\/\/[^\s]+/gi, "")
-        .trimStart();
+        .replace(/https?:\/\/[^\n\s]+/gi, "")
+        .trim()
+        .slice(0, 1200);
 
+const toRawNumber = (str = "") => String(str).replace(/[^0-9]/g, "");
+const fmtCurrency = (n = 0) =>
+    new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n || 0);
+
+const fadeSlide = (reduceMotion) => ({
+    hidden: { opacity: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 12 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.33, ease: "easeOut" } },
+    exit: { opacity: 0, y: -8, transition: { duration: 0.22 } },
+});
+
+const baseInput =
+    "w-full rounded-lg border border-border/40 bg-card/60 px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-300";
+
+/* ---------------- main page ---------------- */
 export default function PostJobPage() {
+    const navigate = useNavigate();
+    const { toast } = useToast();
+    const reduceMotion = useReducedMotion();
+
     const [mode, setMode] = useState("quick");
     const [payment, setPayment] = useState("cash");
-    const [formData, setFormData] = useState({
+    const [submitting, setSubmitting] = useState(false);
+
+    const [form, setForm] = useState({
         title: "",
         description: "",
-        budget: "", // formatted
-        budgetRaw: "", // pure number
+        budgetRaw: "",
+        budget: "",
         durationValue: "",
         durationUnit: "jam",
         category: "",
@@ -27,279 +51,216 @@ export default function PostJobPage() {
         location: "",
     });
 
-    // generic handler
-    const handleChange = (field, value) => {
-        setFormData((prev) => ({ ...prev, [field]: sanitizeInput(value) }));
-    };
+    const dirtyRef = useRef(false);
+    const budgetTimerRef = useRef(null);
 
-    // budget khusus: raw + formatted
-    const handleBudgetChange = (value) => {
-        const raw = value.replace(/\D/g, "");
-        const formatted = raw ? new Intl.NumberFormat("id-ID").format(Number(raw)) : "";
-        setFormData((prev) => ({
-            ...prev,
-            budgetRaw: raw,
-            budget: formatted,
-        }));
-    };
+    const canSubmit = useMemo(() => {
+        const titleOk = form.title.trim().length >= 3;
+        const descOk = form.description.trim().length >= (mode === "quick" ? 8 : 20);
+        return titleOk && descOk && !submitting;
+    }, [form.title, form.description, mode, submitting]);
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const payload = {
-            ...formData,
-            budget: formData.budgetRaw, // kirim raw ke backend
-        };
-        alert(
-            `Posting ${mode} job dengan pembayaran ${payment}:\n${JSON.stringify(
-                payload,
-                null,
-                2
-            )}`
-        );
-    };
+    useEffect(() => () => budgetTimerRef.current && clearTimeout(budgetTimerRef.current), []);
 
-    const fadeSlide = {
-        hidden: { opacity: 0, y: 15 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
-        exit: { opacity: 0, y: -15, transition: { duration: 0.25, ease: "easeIn" } },
-    };
+    const setField = useCallback((k, v) => {
+        dirtyRef.current = true;
+        setForm((s) => ({ ...s, [k]: sanitizeLight(String(v)) }));
+    }, []);
+
+    const handlePasteBlockLinks = useCallback(
+        (e) => {
+            try {
+                const txt = (e.clipboardData || window.clipboardData).getData("text");
+                if (/https?:\/\//i.test(txt) || /<script/i.test(txt) || /javascript:/i.test(txt)) {
+                    e.preventDefault();
+                    toast({ title: "Isi tidak valid", description: "Paste link atau script tidak diizinkan." });
+                }
+            } catch { }
+        },
+        [toast]
+    );
+
+    const handleBudgetRaw = useCallback((rawVal) => {
+        const numbers = toRawNumber(rawVal);
+        setForm((s) => ({ ...s, budgetRaw: numbers, budget: numbers ? fmtCurrency(Number(numbers)) : "" }));
+
+        if (budgetTimerRef.current) clearTimeout(budgetTimerRef.current);
+        budgetTimerRef.current = setTimeout(() => {
+            setForm((s) => ({ ...s, budget: s.budgetRaw ? fmtCurrency(Number(s.budgetRaw)) : "" }));
+        }, 220);
+    }, []);
+
+    const handleSubmit = useCallback(
+        async (e) => {
+            e?.preventDefault?.();
+            if (!canSubmit) {
+                toast({ title: "Periksa formulir", description: "Lengkapi judul dan deskripsi singkat terlebih dahulu." });
+                return;
+            }
+
+            setSubmitting(true);
+            try {
+                const payload = {
+                    title: sanitizeLight(form.title),
+                    description: sanitizeLight(form.description),
+                    budget: Number(form.budgetRaw) || 0,
+                    duration: `${sanitizeLight(form.durationValue || "")} ${sanitizeLight(form.durationUnit)}`,
+                    category: sanitizeLight(form.category),
+                    skills: sanitizeLight(form.skills),
+                    deadline: form.deadline || null,
+                    location: sanitizeLight(form.location),
+                    payment,
+                    mode,
+                };
+
+                await new Promise((r) => setTimeout(r, 600)); // fake API
+
+                toast({ title: "Berhasil", description: "Pekerjaan berhasil diposting." });
+                dirtyRef.current = false;
+                navigate(mode === "quick" ? "/" : "/history");
+            } catch (err) {
+                toast({ title: "Gagal", description: "Terjadi kesalahan. Coba lagi.", variant: "destructive" });
+            } finally {
+                setSubmitting(false);
+            }
+        },
+        [canSubmit, form, mode, navigate, payment, toast]
+    );
 
     return (
-        <div className="relative min-h-screen text-foreground">
-            {/* Header */}
-            <header className="mx-auto max-w-2xl px-4 py-6 flex items-center gap-3">
-                <Link
-                    to={-1}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border/60 bg-card/40 backdrop-blur-xl text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors duration-300"
-                >
-                    <ArrowLeft className="h-5 w-5" />
-                </Link>
-                <h1 className="text-lg font-semibold tracking-tight">Buat Pekerjaan</h1>
-            </header>
+        <div className="min-h-screen p-3 sm:p-6 text-foreground">
+            <div className="max-w-xl mx-auto">
+                {/* header */}
+                <header className="flex items-center gap-3 mb-3">
+                    <Link
+                        to={-1}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/30 bg-card/50 hover:bg-accent/10 transition-all duration-300"
+                        aria-label="Kembali"
+                    >
+                        <ArrowLeft className="h-5 w-5" />
+                    </Link>
+                    <div>
+                        <h1 className="text-base font-semibold">Buat Pekerjaan</h1>
+                        <p className="text-[11px] text-muted-foreground">Singkat & aman.</p>
+                    </div>
+                </header>
 
-            {/* Mode Toggle */}
-            <section className="mx-auto max-w-2xl px-4">
-                <div className="inline-flex w-full rounded-2xl border border-border/60 bg-card/40 backdrop-blur-xl p-1">
-                    <ToggleButton
-                        active={mode === "quick"}
-                        onClick={() => setMode("quick")}
-                        icon={<Zap className="h-4 w-4" />}
-                        label="Cepat"
-                    />
-                    <ToggleButton
-                        active={mode === "detail"}
-                        onClick={() => setMode("detail")}
-                        icon={<FileText className="h-4 w-4" />}
-                        label="Detail"
-                    />
-                </div>
-            </section>
+                {/* form card */}
+                <section className="rounded-xl border border-border/30 bg-card/60 p-3 backdrop-blur-md shadow-md">
+                    {/* toggle */}
+                    <div className="inline-flex w-full rounded-xl border border-border/30 bg-card/40 p-1 mb-3">
+                        <ToggleButtonCompact active={mode === "quick"} onClick={() => setMode("quick")} icon={<Zap className="h-4 w-4" />} label="Cepat" />
+                        <ToggleButtonCompact active={mode === "detail"} onClick={() => setMode("detail")} icon={<FileText className="h-4 w-4" />} label="Detail" />
+                    </div>
 
-            {/* Form */}
-            <main className="mx-auto max-w-2xl px-4 py-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <AnimatePresence mode="wait">
-                        {mode === "quick" ? (
-                            <motion.div
-                                key="quick"
-                                variants={fadeSlide}
-                                initial="hidden"
-                                animate="show"
-                                exit="exit"
-                                className="space-y-5"
-                            >
-                                <InputField
-                                    label="Judul"
-                                    placeholder="Contoh: Antar kopi ke kantor"
-                                    value={formData.title}
-                                    onChange={(e) => handleChange("title", e.target.value)}
-                                />
-                                <TextAreaField
-                                    label="Deskripsi Singkat"
-                                    placeholder="Tuliskan kebutuhanmu"
-                                    value={formData.description}
-                                    onChange={(e) => handleChange("description", e.target.value)}
-                                />
-                                <div className="flex gap-2">
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        placeholder="2"
-                                        className="w-24 rounded-xl border border-border bg-card/60 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                        value={formData.durationValue}
-                                        onChange={(e) => handleChange("durationValue", e.target.value)}
-                                        onWheel={(e) => e.target.blur()}
-                                    />
-                                    <select
-                                        className="flex-1 rounded-xl border border-border bg-card/60 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300"
-                                        value={formData.durationUnit}
-                                        onChange={(e) => handleChange("durationUnit", e.target.value)}
-                                    >
-                                        <option value="menit">Menit</option>
-                                        <option value="jam">Jam</option>
-                                        <option value="hari">Hari</option>
-                                    </select>
-                                </div>
-                                <InputField
-                                    label="Budget"
-                                    placeholder="Rp 100.000"
-                                    value={formData.budget}
-                                    onChange={(e) => handleBudgetChange(e.target.value)}
-                                    type="text"
-                                    inputMode="numeric"
-                                />
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="detail"
-                                variants={fadeSlide}
-                                initial="hidden"
-                                animate="show"
-                                exit="exit"
-                                className="space-y-5"
-                            >
-                                <InputField
-                                    label="Judul"
-                                    placeholder="Contoh: Desain Logo Brand"
-                                    value={formData.title}
-                                    onChange={(e) => handleChange("title", e.target.value)}
-                                />
-                                <TextAreaField
-                                    label="Deskripsi"
-                                    placeholder="Ceritakan detail pekerjaanmu"
-                                    value={formData.description}
-                                    onChange={(e) => handleChange("description", e.target.value)}
-                                />
-                                <InputField
-                                    label="Kategori"
-                                    placeholder="Design, IT, Marketing..."
-                                    value={formData.category}
-                                    onChange={(e) => handleChange("category", e.target.value)}
-                                />
-                                <InputField
-                                    label="Skill"
-                                    placeholder="UI/UX, React.js, Copywriting..."
-                                    value={formData.skills}
-                                    onChange={(e) => handleChange("skills", e.target.value)}
-                                />
-                                <InputField
-                                    label="Budget"
-                                    placeholder="Rp 1.000.000"
-                                    value={formData.budget}
-                                    onChange={(e) => handleBudgetChange(e.target.value)}
-                                    type="text"
-                                    inputMode="numeric"
-                                />
-                                <InputField
-                                    label="Deadline"
-                                    type="date"
-                                    value={formData.deadline}
-                                    onChange={(e) => handleChange("deadline", e.target.value)}
-                                />
-                                <InputField
-                                    label="Lokasi (Opsional)"
-                                    placeholder="Jakarta Selatan"
-                                    value={formData.location}
-                                    onChange={(e) => handleChange("location", e.target.value)}
-                                />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    <form onSubmit={handleSubmit} className="space-y-3">
+                        <AnimatePresence mode="wait">
+                            {mode === "quick" ? (
+                                <motion.div key="quick" variants={fadeSlide(reduceMotion)} initial="hidden" animate="show" exit="exit" className="space-y-3">
+                                    {/* Judul */}
+                                    <InputField label="Judul" value={form.title} onChange={(v) => setField("title", v)} onPaste={handlePasteBlockLinks} placeholder="Contoh: Antar kopi ke kantor" required />
+                                    {/* Deskripsi */}
+                                    <TextAreaField label="Deskripsi singkat" value={form.description} onChange={(v) => setField("description", v)} onPaste={handlePasteBlockLinks} placeholder="Tuliskan kebutuhan singkat (min 8 karakter)" rows={3} />
+                                    {/* Durasi */}
+                                    <div className="flex gap-2">
+                                        <input
+                                            aria-label="Durasi"
+                                            type="number"
+                                            value={form.durationValue}
+                                            onChange={(e) => setField("durationValue", e.target.value)}
+                                            onPaste={handlePasteBlockLinks}
+                                            placeholder="2"
+                                            min={0}
+                                            className="w-20 rounded-lg border border-border/40 bg-card/60 px-2 py-2 text-sm focus:ring-2 focus:ring-accent transition-all duration-300"
+                                        />
+                                        <select
+                                            value={form.durationUnit}
+                                            onChange={(e) => setField("durationUnit", e.target.value)}
+                                            className="flex-1 rounded-lg border border-border/40 bg-card/60 px-2 py-2 text-sm focus:ring-2 focus:ring-accent transition-all duration-300"
+                                        >
+                                            <option value="menit">Menit</option>
+                                            <option value="jam">Jam</option>
+                                            <option value="hari">Hari</option>
+                                        </select>
+                                    </div>
+                                    {/* Budget */}
+                                    <InputField label="Budget (opsional)" value={form.budget} onChange={handleBudgetRaw} onPaste={handlePasteBlockLinks} placeholder="Rp 100.000" inputMode="numeric" />
+                                </motion.div>
+                            ) : (
+                                <motion.div key="detail" variants={fadeSlide(reduceMotion)} initial="hidden" animate="show" exit="exit" className="space-y-3">
+                                    <InputField label="Judul" value={form.title} onChange={(v) => setField("title", v)} onPaste={handlePasteBlockLinks} placeholder="Contoh: Desain Logo Brand" required />
+                                    <TextAreaField label="Deskripsi" value={form.description} onChange={(v) => setField("description", v)} onPaste={handlePasteBlockLinks} placeholder="Ceritakan detail pekerjaanmu" rows={4} />
+                                    <InputField label="Kategori" value={form.category} onChange={(v) => setField("category", v)} onPaste={handlePasteBlockLinks} placeholder="Design, IT, dll" />
+                                    <InputField label="Skill (comma)" value={form.skills} onChange={(v) => setField("skills", v)} onPaste={handlePasteBlockLinks} placeholder="React, Figma" />
+                                    <InputField label="Budget" value={form.budget} onChange={handleBudgetRaw} onPaste={handlePasteBlockLinks} placeholder="Rp 1.000.000" inputMode="numeric" />
+                                    <InputField label="Deadline" type="date" value={form.deadline} onChange={(v) => setField("deadline", v)} />
+                                    <InputField label="Lokasi (opsional)" value={form.location} onChange={(v) => setField("location", v)} onPaste={handlePasteBlockLinks} placeholder="Jakarta Selatan" />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                    {/* Payment Method */}
-                    <div className="space-y-2">
-                        <p className="text-sm font-medium text-foreground/80">
-                            Metode Pembayaran
-                        </p>
-                        <div className="flex gap-2">
-                            <PayButton
-                                active={payment === "cash"}
-                                onClick={() => setPayment("cash")}
-                                icon={<HandCoins className="h-4 w-4" />}
-                                label="Tunai"
-                            />
-                            <PayButton
-                                active={payment === "wallet"}
-                                onClick={() => setPayment("wallet")}
-                                icon={<WalletMinimal className="h-4 w-4" />}
-                                label="Saldo Wallet"
-                            />
+                        {/* Payment */}
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-foreground/85">Metode Pembayaran</p>
+                            <div className="flex gap-2">
+                                <PayButtonCompact active={payment === "cash"} onClick={() => setPayment("cash")} icon={<HandCoins className="h-4 w-4" />} label="Tunai" />
+                                <PayButtonCompact active={payment === "wallet"} onClick={() => setPayment("wallet")} icon={<WalletMinimal className="h-4 w-4" />} label="Saldo" />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Submit */}
-                    <div className="pt-4">
-                        <motion.button
+                        {/* Submit */}
+                        <Button
                             type="submit"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.97 }}
-                            className="w-full rounded-2xl bg-primary px-5 py-3 font-semibold text-primary-foreground shadow-sm transition-all duration-350 hover:bg-accent hover:text-accent-foreground"
+                            className="w-full rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground shadow hover:scale-[1.01] active:scale-[0.99] transition-all duration-300"
+                            disabled={!canSubmit || submitting}
                         >
-                            {mode === "quick" ? "Cari Bantuan" : "Posting Pekerjaan"}
-                        </motion.button>
-                    </div>
-                </form>
-            </main>
+                            {submitting ? "Mengirim..." : mode === "quick" ? "Cari Bantuan" : "Posting Pekerjaan"}
+                        </Button>
+                        <p className="text-[11px] text-muted-foreground">Dengan memposting, Anda menyetujui <span className="text-accent font-medium">Syarat & Ketentuan</span>.</p>
+                    </form>
+                </section>
+            </div>
         </div>
     );
 }
 
-/* --- Sub Components --- */
-function ToggleButton({ active, onClick, icon, label }) {
-    return (
-        <button
-            onClick={onClick}
-            type="button"
-            className={`flex-1 flex items-center justify-center gap-1 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${active
-                    ? "bg-accent text-accent-foreground shadow"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
-                }`}
-        >
-            {icon} {label}
-        </button>
-    );
-}
+/* ---------------- helper components ---------------- */
+const InputField = ({ label, type = "text", ...props }) => (
+    <div>
+        <label className="block text-xs font-medium mb-1 text-foreground/85">{label}</label>
+        <input type={type} {...props} className={baseInput} />
+    </div>
+);
 
-function PayButton({ active, onClick, icon, label }) {
-    return (
-        <button
-            onClick={onClick}
-            type="button"
-            className={`flex-1 flex items-center justify-center gap-1 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${active
-                    ? "bg-accent text-accent-foreground shadow"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
-                }`}
-        >
-            {icon} {label}
-        </button>
-    );
-}
+const TextAreaField = ({ label, rows = 3, ...props }) => (
+    <div>
+        <label className="block text-xs font-medium mb-1 text-foreground/85">{label}</label>
+        <textarea rows={rows} {...props} className={baseInput + " resize-none"} />
+    </div>
+);
 
-function InputField({ label, ...props }) {
-    return (
-        <div>
-            <label className="block text-sm font-medium mb-1 text-foreground/80">
-                {label}
-            </label>
-            <input
-                {...props}
-                className="w-full rounded-xl border border-border bg-card/70 px-4 py-2 text-sm shadow-sm placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300"
-            />
-        </div>
-    );
-}
+const ToggleButtonCompact = React.memo(({ active, onClick, icon, label }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        className={`flex-1 flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all duration-300 ${active ? "bg-accent text-accent-foreground shadow" : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+            }`}
+        aria-pressed={active}
+    >
+        {icon}
+        <span>{label}</span>
+    </button>
+));
 
-function TextAreaField({ label, ...props }) {
-    return (
-        <div>
-            <label className="block text-sm font-medium mb-1 text-foreground/80">
-                {label}
-            </label>
-            <textarea
-                rows={4}
-                {...props}
-                className="w-full rounded-xl border border-border bg-card/70 px-4 py-2 text-sm shadow-sm placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-accent focus:border-accent transition-all duration-300"
-            />
-        </div>
-    );
-}
+const PayButtonCompact = React.memo(({ active, onClick, icon, label }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        className={`flex-1 flex items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium transition-all duration-300 ${active ? "bg-accent text-accent-foreground shadow" : "text-muted-foreground hover:text-foreground hover:bg-secondary/40"
+            }`}
+        aria-pressed={active}
+    >
+        {icon}
+        <span>{label}</span>
+    </button>
+));
