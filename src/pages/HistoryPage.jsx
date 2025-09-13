@@ -17,6 +17,7 @@ import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import AnimatedPage from "@/components/AnimatedPage";
+import EmptyState from "@/components/feedback/EmptyState";
 
 // --- Dummy Data (nanti bisa diganti API) ---
 const seedJobs = [
@@ -85,8 +86,7 @@ const fmtIDR = (n) =>
         maximumFractionDigits: 0,
     }).format(n);
 
-const sanitizeInput = (val) =>
-    val.replace(/[<>]/g, "").replace(/(script|http|www)/gi, "");
+/* input sanitization handled by Input component via sanitize="strong" */
 
 // --- Status Badge ---
 const StatusBadge = ({ status }) => {
@@ -120,8 +120,8 @@ const PayBadge = ({ payment }) => {
     return (
         <span
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors duration-300 ${isPaid
-                    ? "bg-primary/15 text-primary ring-1 ring-primary/25"
-                    : "bg-muted text-muted-foreground ring-1 ring-border/60"
+                ? "bg-primary/15 text-primary ring-1 ring-primary/25"
+                : "bg-muted text-muted-foreground ring-1 ring-border/60"
                 }`}
         >
             <Wallet className="h-3.5 w-3.5" />
@@ -198,19 +198,6 @@ const JobRow = React.memo(function JobRow({ job, as = "worker" }) {
     );
 });
 
-// --- Empty State ---
-const EmptyState = ({ role, filter }) => {
-    const msg = filter === "all" ? "Belum ada data." : "Tidak ada hasil.";
-    return (
-        <div className="rounded-2xl border border-dashed border-border/60 bg-card/40 p-10 text-center backdrop-blur-md">
-            <BadgeCheck className="mx-auto h-10 w-10 text-accent" />
-            <p className="mt-2 text-sm font-medium text-foreground">
-                {role === "worker" ? "Riwayat kerja kosong" : "Riwayat posting kosong"}
-            </p>
-            <p className="text-xs text-muted-foreground">{msg}</p>
-        </div>
-    );
-};
 
 // --- Main Page ---
 export default function HistoryPage() {
@@ -271,8 +258,8 @@ export default function HistoryPage() {
                                 onClick={() => setRole(r)}
                                 aria-pressed={role === r}
                                 className={`rounded-xl px-3.5 py-1.5 text-sm font-medium transition-colors duration-300 ${role === r
-                                        ? "bg-accent text-accent-foreground"
-                                        : "text-muted-foreground hover:bg-card/60 hover:text-foreground"
+                                    ? "bg-accent text-accent-foreground"
+                                    : "text-muted-foreground hover:bg-card/60 hover:text-foreground"
                                     }`}
                             >
                                 {r === "worker" ? "Worker" : "Client"}
@@ -293,7 +280,8 @@ export default function HistoryPage() {
                         <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                             value={q}
-                            onChange={(e) => setQ(sanitizeInput(e.target.value))}
+                            onChange={(e) => setQ(e.target.value)}
+                            sanitize="strong"
                             placeholder="Cari riwayat…"
                             className="pl-9 rounded-2xl border-border/50 bg-background/40 text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent/40 transition-colors duration-300"
                         />
@@ -312,8 +300,8 @@ export default function HistoryPage() {
                                 onClick={() => setFilter(f.key)}
                                 aria-pressed={filter === f.key}
                                 className={`flex-1 rounded-xl px-3 py-1.5 text-sm font-medium transition-colors duration-300 ${filter === f.key
-                                        ? "bg-primary text-primary-foreground"
-                                        : "text-muted-foreground hover:bg-accent/10 hover:text-foreground"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "text-muted-foreground hover:bg-accent/10 hover:text-foreground"
                                     }`}
                             >
                                 {f.label}
@@ -342,7 +330,11 @@ export default function HistoryPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -8 }}
                                 >
-                                    <EmptyState role={role} filter={filter} />
+                                    <EmptyState
+                                        icon={<BadgeCheck className="h-6 w-6" />}
+                                        title={role === "worker" ? "Riwayat kerja kosong" : "Riwayat posting kosong"}
+                                        subtitle={filter === "all" ? "Belum ada data." : "Tidak ada hasil."}
+                                    />
                                 </motion.div>
                             ) : (
                                 filtered.map((job) => <JobRow key={job.id} job={job} as={role} />)

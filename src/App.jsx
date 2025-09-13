@@ -27,10 +27,14 @@ const HelpCenterPage = lazy(() => import('@/pages/HelpCenterPage'));
 const ReferralPage = lazy(() => import('@/pages/ReferralPage'));
 const GamificationPage = lazy(() => import('@/pages/GamificationPage'));
 const NotificationPage = lazy(() => import('@/pages/NotificationPage'));
+const NotificationSettingsPage = lazy(() => import('@/pages/NotificationSettingsPage'));
 const HistoryPage = lazy(() => import('@/pages/HistoryPage'));
 const SignupPage = lazy(() => import('@/pages/SignupPage'));
 const JobPage = lazy(() => import('@/pages/JobPage'));
 const JobStatusPage = lazy(() => import('@/pages/JobStatusPage'));
+const OffersInboxPage = lazy(() => import('@/pages/OffersInboxPage'));
+const SecurityPage = lazy(() => import('@/pages/SecurityPage'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 
 // Smooth, premium duration across the app
 const TRANSITION_MS = 320; // 300–350ms sweet spot
@@ -148,6 +152,7 @@ export default function App() {
                                 <Route path="/client/dashboard" element={<PageWrapper><ClientDashboard /></PageWrapper>} />
                                 <Route path="/client/wallet" element={<PageWrapper><WalletPage role="client" /></PageWrapper>} />
                                 <Route path="/client/history" element={<PageWrapper><HistoryPage role="client" /></PageWrapper>} />
+                                <Route path="/client/offers" element={<PageWrapper><OffersInboxPage /></PageWrapper>} />
 
                                 {/* Worker */}
                                 <Route path="/worker/dashboard" element={<PageWrapper><WorkerDashboard /></PageWrapper>} />
@@ -160,16 +165,19 @@ export default function App() {
                                 <Route path="/post-job" element={<PageWrapper><PostJobPage /></PageWrapper>} />
                                 <Route path="/job/:id/track" element={<PageWrapper><JobTrackingPage /></PageWrapper>} />
                                 <Route path="/profile" element={<PageWrapper><ProfilePage /></PageWrapper>} />
+                                <Route path="/profile/security" element={<PageWrapper><SecurityPage /></PageWrapper>} />
                                 <Route path="/job/:id/rate" element={<PageWrapper><RatingPage /></PageWrapper>} />
                                 <Route path="/dispute" element={<PageWrapper><DisputePage /></PageWrapper>} />
                                 <Route path="/help" element={<PageWrapper><HelpCenterPage /></PageWrapper>} />
                                 <Route path="/referral" element={<PageWrapper><ReferralPage /></PageWrapper>} />
                                 <Route path="/gamification" element={<PageWrapper><GamificationPage /></PageWrapper>} />
                                 <Route path="/notifications" element={<PageWrapper><NotificationPage /></PageWrapper>} />
+                                <Route path="/notifications/settings" element={<PageWrapper><NotificationSettingsPage /></PageWrapper>} />
                             </Route>
 
                             {/* Standalone */}
                             <Route path="/chat/:id" element={<PageWrapper><RoomChat /></PageWrapper>} />
+                            <Route path="*" element={<PageWrapper><NotFound /></PageWrapper>} />
                         </Routes>
                     </Suspense>
                 </AnimatePresence>

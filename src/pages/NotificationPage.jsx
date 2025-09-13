@@ -17,10 +17,12 @@ import {
     Trash2,
     X,
     BellRing,
+    Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import AnimatedPage from "@/components/AnimatedPage";
+import EmptyState from "@/components/feedback/EmptyState";
 
 /* ---------------- sample data ---------------- */
 const SAMPLE_NOTIFS = [
@@ -210,6 +212,16 @@ export default function NotificationPage() {
                                 <span className="text-xs">Semua</span>
                             </Button>
 
+                            <Link to="/notifications/settings" aria-label="Pengaturan notifikasi">
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="rounded-full bg-card/30 backdrop-blur-md hover:bg-card/50 transition-colors duration-300"
+                                >
+                                    <Settings className="h-4 w-4 text-foreground" />
+                                </Button>
+                            </Link>
+
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -241,18 +253,13 @@ export default function NotificationPage() {
                                     initial={{ opacity: 0, y: 8 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -8 }}
-                                    className="mt-8 text-center"
+                                    className="mt-8"
                                 >
-                                    <div className="mx-auto max-w-xs rounded-2xl border border-dashed border-border/50 bg-card/50 backdrop-blur-md p-6 sm:p-8">
-                                        <div className="mx-auto inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-accent/10 text-accent mb-2 sm:mb-3">
-                                            <BellRing className="h-5 w-5 sm:h-6 sm:w-6" />
-                                        </div>
-                                        <p className="text-sm font-medium text-foreground">
-                                            Semua notifikasi sudah dibersihkan 🎉
-                                        </p>
-                                        <p className="mt-1 text-xs text-muted-foreground">Tidak ada notifikasi terbaru.</p>
-
-                                        <div className="mt-4 flex justify-center">
+                                    <EmptyState
+                                        icon={<BellRing className="h-6 w-6" />}
+                                        title="Semua notifikasi sudah dibersihkan 🎉"
+                                        subtitle="Tidak ada notifikasi terbaru."
+                                        action={
                                             <Link to="/client/dashboard">
                                                 <Button
                                                     size="sm"
@@ -261,8 +268,8 @@ export default function NotificationPage() {
                                                     Beranda
                                                 </Button>
                                             </Link>
-                                        </div>
-                                    </div>
+                                        }
+                                    />
                                 </motion.div>
                             )}
                         </AnimatePresence>

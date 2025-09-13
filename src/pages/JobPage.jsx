@@ -6,6 +6,8 @@ import { Helmet } from "react-helmet";
 import { ArrowLeft, Search, MessageSquare, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import EmptyState from "@/components/feedback/EmptyState";
 import AnimatedPage from "@/components/AnimatedPage";
 
 /* -------------------------
@@ -166,13 +168,12 @@ export default function JobPage() {
                     <div className="flex items-center gap-2 mb-3">
                         <div className="flex items-center gap-2 flex-1 rounded-full border border-border bg-card/50 px-3 py-2 backdrop-blur-md">
                             <Search className="h-4 w-4 text-muted-foreground" />
-                            <input
+                            <Input
                                 value={query}
-                                onChange={(e) =>
-                                    setQuery(sanitizeText(e.target.value).slice(0, 100))
-                                }
+                                onChange={(e) => setQuery(e.target.value)}
+                                sanitize="strong"
                                 placeholder="Cari judul, ID, atau client..."
-                                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent/40"
                             />
                         </div>
 
@@ -191,11 +192,10 @@ export default function JobPage() {
                     {/* Task List */}
                     <div className="space-y-3">
                         {filtered.length === 0 ? (
-                            <Card className="rounded-xl border-dashed border border-border/60 bg-card/40 p-6 text-center backdrop-blur-xl">
-                                <CardContent>
-                                    <p className="text-sm text-muted-foreground mb-3">
-                                        Tidak ada tugas ditemukan
-                                    </p>
+                            <EmptyState
+                                title="Tidak ada tugas"
+                                subtitle="Tugas akan muncul di sini."
+                                action={
                                     <Button
                                         size="sm"
                                         className="bg-primary text-primary-foreground hover:bg-primary/90 transition duration-300"
@@ -203,8 +203,8 @@ export default function JobPage() {
                                     >
                                         Reset Demo
                                     </Button>
-                                </CardContent>
-                            </Card>
+                                }
+                            />
                         ) : (
                             filtered.map((t) => (
                                 <motion.div key={t.id} {...listAnim}>

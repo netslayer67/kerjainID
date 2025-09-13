@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/ThemeToggle";
 
 /* ---------------------- Helpers ---------------------- */
 const fmtShort = (v) => new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(v || 0);
@@ -159,9 +160,13 @@ export default function ProfilePage() {
                                     <div className="flex items-center gap-2">
                                         <p className="text-base font-semibold text-foreground truncate">{sanitizeText(user.name)}</p>
 
-                                        <div className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] uppercase tracking-wide font-medium text-white shadow-sm bg-gradient-to-r ${tier.from} ${tier.to}`}>
+                                        <Link
+                                            to="/gamification"
+                                            className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] uppercase tracking-wide font-medium text-accent shadow-sm bg-gradient-to-r ${tier.from} ${tier.to} hover:ring-2 hover:ring-accent/40 transition duration-300`}
+                                            aria-label="Lihat halaman gamification"
+                                        >
                                             <Award className="h-3.5 w-3.5" /> {tier.label}
-                                        </div>
+                                        </Link>
                                     </div>
 
                                     <p className="text-xs text-muted-foreground truncate">{sanitizeText(user.email)}</p>
@@ -217,6 +222,22 @@ export default function ProfilePage() {
                             </div>
                         </div>
                     </motion.nav>
+
+                    {/* Theme section */}
+                    <motion.section variants={item} className="mt-6">
+                        <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/40 px-4 py-3 backdrop-blur-xl transition-colors duration-300">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-secondary/30">
+                                    <Star className="h-4 w-4 text-foreground/80" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-foreground">Tema</p>
+                                    <p className="text-xs text-muted-foreground">Pilih Light atau Dark mode</p>
+                                </div>
+                            </div>
+                            <ThemeToggle />
+                        </div>
+                    </motion.section>
 
                     {/* quick actions */}
                     <motion.div variants={item} className="mt-6 grid gap-3">

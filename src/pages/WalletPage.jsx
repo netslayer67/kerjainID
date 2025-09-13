@@ -14,6 +14,9 @@ import {
     ScanLine,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import KYCStatusBanner from "@/components/Banners/KYCStatusBanner";
+import EmptyState from "@/components/feedback/EmptyState";
+import TxDetailSheet from "@/components/Sheets/TxDetailSheet";
 
 const fmtIDR = (n) =>
     new Intl.NumberFormat("id-ID", {
@@ -32,8 +35,14 @@ const TRANS_MS = 320;
 export default function WalletPage() {
     const [activeTab, setActiveTab] = useState("semua");
     const [isLoading, setIsLoading] = useState(true);
+    const [prefPay, setPrefPay] = useState("wallet");
+    const [kycTier, setKycTier] = useState("L1"); // demo: L0 | L1 | L2
     const { toast } = useToast();
     const reduceMotion = useReducedMotion();
+
+    // Tx detail sheet state
+    const [txOpen, setTxOpen] = useState(false);
+    const [selectedTx, setSelectedTx] = useState(null);
 
     useEffect(() => {
         const t = setTimeout(() => setIsLoading(false), 700);
@@ -92,10 +101,20 @@ export default function WalletPage() {
                     </div>
                 </div>
 
+                {/* KYC Banner */}
+                <div className="mb-3">
+                    <KYCStatusBanner tier={kycTier} onVerify={() => setKycTier("L2")} />
+                </div>
+
                 {/* PROFILE INFO (Dummy Bank) */}
                 <div className="mb-3 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-xl p-3 text-xs">
                     Bank Dummy: BCA 123456789 a/n Nama Pengguna
                 </div>
+
+                {/* Preferred Payment
+                <div className="mb-3">
+                    <PaymentMethodPills value={prefPay} onChange={setPrefPay} size="sm" />
+                </div> */}
 
                 {/* BALANCE */}
                 <motion.div {...balanceMotion}>
@@ -147,16 +166,35 @@ export default function WalletPage() {
                             {isLoading ? (
                                 Array.from({ length: 3 }).map((_, i) => <TxSkeleton key={i} />)
                             ) : filtered.length === 0 ? (
-                                <div className="py-6 text-center text-xs text-muted-foreground">
-                                    Belum ada transaksi
+                                <div className="py-4">
+                                    <EmptyState
+                                        title="Belum ada transaksi"
+                                        subtitle="Transaksi akan muncul di sini."
+                                    />
                                 </div>
                             ) : (
-                                filtered.map((tx) => <TransactionItem key={tx.id} tx={tx} />)
+                                filtered.map((tx) => (
+                                    <TransactionItem
+                                        key={tx.id}
+                                        tx={tx}
+                                        onClick={() => {
+                                            setSelectedTx(tx);
+                                            setTxOpen(true);
+                                        }}
+                                    />
+                                ))
                             )}
                         </div>
                     </GlassCard>
                 </div>
             </div>
+
+            {/* Tx Detail Sheet */}
+            <TxDetailSheet
+                open={txOpen}
+                onOpenChange={setTxOpen}
+                tx={selectedTx || undefined}
+            />
         </div>
     );
 }
@@ -241,10 +279,14 @@ function QuickActions({ handleToast }) {
     );
 }
 
-const TransactionItem = React.memo(function TransactionItem({ tx }) {
+const TransactionItem = React.memo(function TransactionItem({ tx, onClick }) {
     const isIn = tx.type === "in";
     return (
-        <div className="flex items-center justify-between gap-2 py-3">
+        <button
+            type="button"
+            onClick={onClick}
+            className="w-full text-left cursor-pointer flex items-center justify-between gap-2 py-3 transition-colors hover:bg-card/30 rounded-xl px-2"
+        >
             <div className="flex items-center gap-3">
                 <div
                     className={`flex h-9 w-9 items-center justify-center rounded-xl ${isIn ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
@@ -260,7 +302,7 @@ const TransactionItem = React.memo(function TransactionItem({ tx }) {
             <p className={`text-xs font-semibold ${isIn ? "text-emerald-400" : "text-rose-400"}`}>
                 {isIn ? "+" : "-"} {fmtIDR(tx.amount)}
             </p>
-        </div>
+        </button>
     );
 });
 

@@ -134,3 +134,103 @@
     background-color: hsl(var(--accent));
     color: hsl(var(--accent-foreground));
 }
+
+/* ===== Utilities and motion tokens (appended) ===== */
+
+@layer base {
+    :root {
+        --ease-soft: cubic-bezier(.2, .9, .2, 1);
+        --motion-320: 320ms;
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+    /* Accessible focus style (subtle ring with accent) */
+    :focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px hsl(var(--accent) / 0.55);
+    }
+}
+
+/* Liquid glass + premium utilities */
+@layer utilities {
+
+    /* Subtle grid backgrounds used across loaders, cards, toggles */
+    .bg-grid-small {
+        background-size: 24px 24px;
+        background-image:
+            linear-gradient(to right, hsl(var(--foreground) / 0.06) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(var(--foreground) / 0.06) 1px, transparent 1px);
+    }
+
+    .bg-grid-small-dark {
+        background-size: 24px 24px;
+        background-image:
+            linear-gradient(to right, hsl(var(--foreground) / 0.10) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(var(--foreground) / 0.10) 1px, transparent 1px);
+    }
+
+    /* Glass surfaces */
+    .glass {
+        @apply bg-card/50 backdrop-blur-xl border border-border/40 shadow-sm;
+    }
+
+    .glass-strong {
+        @apply bg-card/40 backdrop-blur-2xl border border-border/50 shadow-lg;
+    }
+
+    /* Premium hover card motion */
+    .hover-card {
+        transition:
+            transform var(--motion-320) var(--ease-soft),
+            box-shadow var(--motion-320) var(--ease-soft),
+            background-color var(--motion-320) var(--ease-soft),
+            border-color var(--motion-320) var(--ease-soft);
+    }
+
+    /* Soft ring glow for key CTAs */
+    .ring-glow {
+        box-shadow:
+            0 0 0 2px hsl(var(--accent) / 0.35),
+            0 0 40px hsl(var(--accent) / 0.25);
+    }
+
+    /* Compact mobile typography helpers */
+    .text-compact {
+        font-feature-settings: "tnum";
+        letter-spacing: 0.01em;
+    }
+
+    .card-tight {
+        @apply p-3 sm:p-4 rounded-2xl;
+    }
+}
+
+/* Smooth transitions by default on key properties (lightweight) */
+@layer base {
+    :root {
+        --transition-props: color, background-color, border-color, box-shadow, transform, opacity;
+    }
+
+    a,
+    button,
+    .btn,
+    .card,
+    .nav-item,
+    .chip,
+    input,
+    select,
+    textarea {
+        transition-property: var(--transition-props);
+        transition-duration: var(--motion-320);
+        transition-timing-function: var(--ease-soft);
+    }
+}

@@ -13,6 +13,9 @@ import {
     Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import SafetyTipsSheet from "@/components/Sheets/SafetyTipsSheet";
+import ReportUserModal from "@/components/Modals/ReportUserModal";
 
 const safeText = (v = "") =>
     String(v)
@@ -39,7 +42,7 @@ const DUMMY_JOB = {
     duration: "2 jam",
 };
 
-export default function JobTrackingPage({ job = null, role = "worker" }) {
+export default function JobTrackingPage({ job = null, role = "client" }) {
     const navigate = useNavigate();
     const { toast } = useToast();
     const data = job || DUMMY_JOB;
@@ -47,6 +50,8 @@ export default function JobTrackingPage({ job = null, role = "worker" }) {
     const [mapLoaded, setMapLoaded] = useState(true);
     const [slidePercent, setSlidePercent] = useState(0);
     const [completed, setCompleted] = useState(false);
+    const [openSafety, setOpenSafety] = useState(false);
+    const [openReport, setOpenReport] = useState(false);
     const sliderRef = useRef(null);
     const knobRef = useRef(null);
 
@@ -111,26 +116,48 @@ export default function JobTrackingPage({ job = null, role = "worker" }) {
                     </div>
                 </div>
 
-                {/* Map */}
+                {/* Map (react-leaflet) */}
                 <div className="relative rounded-2xl overflow-hidden border bg-card/50 backdrop-blur-xl">
-                    {mapLoaded ? (
-                        <iframe
-                            title="Job location"
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3952.011884208013!2d110.36948931536505!3d-7.814228579713!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a579f4f9c4e21%3A0x301576d14febac0!2sYogyakarta!5e0!3m2!1sen!2sid!4v1614311223456!5m2!1sen!2sid"
-                            className="w-full aspect-[4/3] md:aspect-video"
-                            loading="lazy"
-                            onLoad={() => setMapLoaded(true)}
-                            onError={() => setMapLoaded(false)}
-                            aria-hidden={false}
-                            aria-label="Peta lokasi pekerjaan"
+                    <MapContainer
+                        center={[-7.81423, 110.36949]}
+                        zoom={13}
+                        scrollWheelZoom={false}
+                        className="w-full aspect-[4/3] md:aspect-video"
+                        whenReady={() => setMapLoaded(true)}
+                    >
+                        <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                    ) : (
-                        <div className="w-full aspect-[4/3] md:aspect-video flex items-center justify-center">
-                            <p className="text-sm">Peta tidak tersedia</p>
+                        <Marker position={[-7.81423, 110.36949]}>
+                            <Popup>
+                                {safeText(data.title)} • {safeText(data.locationLabel)}
+                            </Popup>
+                        </Marker>
+                    </MapContainer>
+                    {!mapLoaded && (
+                        <div className="absolute inset-0 grid place-items-center">
+                            <p className="text-sm text-muted-foreground">Memuat peta…</p>
                         </div>
                     )}
                     <div className="absolute left-3 top-3 rounded-full bg-card/80 px-2.5 py-1 text-xs border">
                         ETA: {safeText(data.duration || "—")}
+                    </div>
+                    <div className="absolute right-3 top-3 flex gap-2">
+                        <button
+                            onClick={() => setOpenSafety(true)}
+                            className="rounded-lg border px-2.5 py-1 text-xs bg-background/60 hover:bg-accent/10 transition-colors duration-300"
+                            title="Tips Keamanan"
+                        >
+                            Tips
+                        </button>
+                        <button
+                            onClick={() => setOpenReport(true)}
+                            className="rounded-lg border px-2.5 py-1 text-xs bg-background/60 hover:bg-destructive/10 hover:text-destructive transition-colors duration-300"
+                            title="Laporkan Pengguna"
+                        >
+                            Laporkan
+                        </button>
                     </div>
                 </div>
 
@@ -170,6 +197,18 @@ export default function JobTrackingPage({ job = null, role = "worker" }) {
                         >
                             <Phone className="w-4 h-4 inline-block mr-1" /> Call
                         </a>
+                        <button
+                            onClick={() => setOpenSafety(true)}
+                            className="rounded-lg border px-2.5 py-1 text-xs sm:text-sm hover:bg-accent/10 transition-colors duration-300"
+                        >
+                            Tips
+                        </button>
+                        <button
+                            onClick={() => setOpenReport(true)}
+                            className="rounded-lg border px-2.5 py-1 text-xs sm:text-sm hover:bg-destructive/10 hover:text-destructive transition-colors duration-300"
+                        >
+                            Laporkan
+                        </button>
                     </div>
                 </div>
 
@@ -258,6 +297,15 @@ export default function JobTrackingPage({ job = null, role = "worker" }) {
                         </div>
                     </div>
                 )}
+                {/* Safety and Report */}
+                <SafetyTipsSheet open={openSafety} onOpenChange={setOpenSafety} />
+                <ReportUserModal
+                    open={openReport}
+                    onOpenChange={setOpenReport}
+                    onSubmit={({ reason, detail }) => {
+                        toast({ title: "Laporan terkirim", description: `${reason} • ${detail.slice(0, 60)}...` });
+                    }}
+                />
             </motion.div>
         </div>
     );

@@ -14,6 +14,10 @@ const NegotiationModalCompact = ({
     jobFee = 100000,
     role = "worker", // "worker" | "client"
     initialOffers = [],
+    onSendOffer, // optional: (amount:number) => void
+    onAccept,    // optional: (offer) => void
+    onReject,    // optional: (offer) => void
+    onAcceptedFinal, // optional: (offer) => void (finalize & close)
 }) => {
     const [offers, setOffers] = useState(initialOffers);
     const [inputValue, setInputValue] = useState("");
@@ -41,9 +45,13 @@ const NegotiationModalCompact = ({
         };
         setOffers((prev) => [...prev, newOffer]);
         setNotification(
-            `Rp${amt.toLocaleString("id-ID")} dikirim oleh ${byRole === "worker" ? "Pekerja" : "Klien"
-            }`
+            `Rp${amt.toLocaleString("id-ID")} dikirim oleh ${byRole === "worker" ? "Pekerja" : "Klien"}`
         );
+        try {
+            onSendOffer?.(amt);
+        } catch {
+            /* noop */
+        }
     };
 
     // auto expire
@@ -61,17 +69,32 @@ const NegotiationModalCompact = ({
     }, []);
 
     const acceptOffer = (id) => {
+        const accepted = offers.find((o) => o.id === id);
         setOffers((prev) =>
             prev.map((o) => (o.id === id ? { ...o, status: "accepted" } : o))
         );
         setNotification("Penawaran diterima ✔️");
+        try {
+            if (accepted) {
+                onAccept?.(accepted);
+                onAcceptedFinal?.(accepted);
+            }
+        } catch {
+            /* noop */
+        }
     };
 
     const rejectOffer = (id) => {
+        const rej = offers.find((o) => o.id === id);
         setOffers((prev) =>
             prev.map((o) => (o.id === id ? { ...o, status: "rejected" } : o))
         );
         setNotification("Penawaran ditolak ✖️");
+        try {
+            if (rej) onReject?.(rej);
+        } catch {
+            /* noop */
+        }
     };
 
     const quickOffers = [0.8, 1.0, 1.2];

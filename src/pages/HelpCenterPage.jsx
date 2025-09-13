@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import EmptyState from "@/components/feedback/EmptyState";
 import AnimatedPage from "@/components/AnimatedPage";
 import { Helmet } from "react-helmet";
 
@@ -84,6 +85,7 @@ export default function HelpCenterPage() {
                         placeholder="Cari pertanyaan atau topik..."
                         value={search}
                         onChange={(e) => setSearch(sanitize(e.target.value))}
+                        sanitize="strong"
                         className="pl-10 rounded-2xl border-border/50 bg-card/40 text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent/40 transition-all duration-300"
                     />
                 </motion.div>
@@ -119,9 +121,7 @@ export default function HelpCenterPage() {
                             </motion.div>
                         ))
                     ) : (
-                        <p className="text-sm text-muted-foreground">
-                            Tidak ada hasil ditemukan.
-                        </p>
+                        <EmptyState title="Tidak ada hasil" subtitle="Coba kata kunci lain." />
                     )}
                 </motion.section>
 

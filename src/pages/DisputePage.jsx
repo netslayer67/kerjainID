@@ -9,18 +9,13 @@ import { Label } from "@/components/ui/label";
 import AnimatedPage from "@/components/AnimatedPage";
 import { useToast } from "@/components/ui/use-toast";
 import { Helmet } from "react-helmet";
+import { Textarea } from "@/components/ui/textarea";
+import { sanitizeText } from "@/lib/utils";
 
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const MAX_DESC_LENGTH = 2000;
 
-const sanitizeText = (v = "") =>
-    String(v || "")
-        .replace(/<[^>]*>/g, "")
-        .replace(/\b(?:https?:|mailto:|ftp:|javascript:)[^\s]*/gi, "")
-        .replace(/\s{2,}/g, " ")
-        .trim()
-        .slice(0, MAX_DESC_LENGTH);
 
 const formatBytes = (n) => {
     if (n < 1024) return `${n} B`;
@@ -212,12 +207,13 @@ export default function DisputePage() {
                             </div>
                             <div>
                                 <Label className="text-xs text-muted-foreground">Detail Masalah</Label>
-                                <textarea
-                                    rows="4"
+                                <Textarea
+                                    rows={4}
                                     required
                                     value={description}
-                                    onChange={(e) => setDescription(sanitizeText(e.target.value))}
-                                    className="mt-1 w-full rounded-xl border border-border/40 bg-background/40 px-3 py-2 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-accent transition"
+                                    sanitize="strong"
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    className="mt-1 text-xs sm:text-sm"
                                     placeholder="Contoh: Pekerja tidak menyelesaikan..."
                                 />
                                 <p className="mt-1 text-right text-[10px] sm:text-xs text-muted-foreground">

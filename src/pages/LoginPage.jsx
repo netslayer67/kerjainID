@@ -9,23 +9,7 @@ import { Label } from "@/components/ui/label";
 import AnimatedPage from "@/components/AnimatedPage";
 import { useToast } from "@/components/ui/use-toast";
 import { Helmet } from "react-helmet";
-
-/**
- * sanitizeText - ringan & safe sanitization for user inputs
- * - removes tags
- * - strips javascript:, data:, vbscript:
- * - removes http/https/ftp links
- * - collapses multiple spaces
- * - trims and limits length
- */
-const sanitizeText = (v = "", maxLen = 240) =>
-    String(v)
-        .replace(/<[^>]*>/g, "")
-        .replace(/\b(?:javascript:|data:|vbscript:)[^\s]*/gi, "")
-        .replace(/https?:\/\/[^\s]+/gi, "")
-        .replace(/\s{2,}/g, " ")
-        .trim()
-        .slice(0, maxLen);
+import { isValidEmail } from "@/lib/utils";
 
 export default function LoginPage() {
     const { toast } = useToast();
@@ -39,22 +23,24 @@ export default function LoginPage() {
 
     // motion timing consistent with design (320ms)
     const anim = useMemo(
-        () => ({ initial: { opacity: 0, scale: 0.98, y: 18 }, animate: { opacity: 1, scale: 1, y: 0 }, transition: { duration: 0.32, ease: "easeOut" } }),
+        () => ({
+            initial: { opacity: 0, scale: 0.98, y: 18 },
+            animate: { opacity: 1, scale: 1, y: 0 },
+            transition: { duration: 0.32, ease: "easeOut" },
+        }),
         []
     );
 
     const handleSubmit = useCallback(
         (e) => {
             e.preventDefault();
-            const safeEmail = sanitizeText(email, 120);
-            const safePassword = sanitizeText(password, 240);
 
             // minimal validation
-            if (!safeEmail || !safeEmail.includes("@")) {
+            if (!isValidEmail(email)) {
                 toast({ title: "Alamat email tidak valid", description: "Periksa kembali email Anda." });
                 return;
             }
-            if (!safePassword || safePassword.length < 6) {
+            if (!password || password.length < 6) {
                 toast({ title: "Password terlalu pendek", description: "Gunakan minimal 6 karakter." });
                 return;
             }
@@ -110,10 +96,11 @@ export default function LoginPage() {
                                         autoComplete="email"
                                         placeholder="name@contoh.com"
                                         value={email}
-                                        onChange={(e) => setEmail(sanitizeText(e.target.value, 120))}
+                                        sanitize="strong"
+                                        onChange={(e) => setEmail(e.target.value)}
                                         required
                                         aria-required="true"
-                                        className="w-full rounded-xl border border-border/40 bg-background/20 pl-10 pr-3 py-2 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-accent transition-colors duration-320"
+                                        className="w-full rounded-xl pl-10 pr-3"
                                     />
                                 </div>
                             </div>
@@ -130,10 +117,11 @@ export default function LoginPage() {
                                         type={showPwd ? "text" : "password"}
                                         placeholder="Minimal 6 karakter"
                                         value={password}
-                                        onChange={(e) => setPassword(sanitizeText(e.target.value, 240))}
+                                        sanitize="strong"
+                                        onChange={(e) => setPassword(e.target.value)}
                                         required
                                         aria-required="true"
-                                        className="w-full rounded-xl border border-border/40 bg-background/20 pl-10 pr-10 py-2 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-accent transition-colors duration-320"
+                                        className="w-full rounded-xl pl-10 pr-10"
                                     />
                                     <button
                                         type="button"
@@ -150,7 +138,7 @@ export default function LoginPage() {
 
                             <Button
                                 type="submit"
-                                className="w-full rounded-2xl bg-primary px-4 py-3 font-semibold text-primary-foreground shadow-sm transition-colors duration-320 hover:bg-accent hover:text-accent-foreground"
+                                className="w-full rounded-2xl bg-gradient-to-r from-primary to-accent px-4 py-3 font-semibold text-primary-foreground shadow-sm"
                                 aria-busy={loading}
                                 disabled={loading}
                             >
@@ -170,14 +158,14 @@ export default function LoginPage() {
                         <div className="grid grid-cols-2 gap-3">
                             <Button
                                 variant="outline"
-                                className="rounded-xl border-border/40 bg-background/20 text-foreground hover:bg-background/30 transition-colors duration-320"
+                                className="rounded-xl border-border/40 bg-background/20 text-foreground hover:bg-background/30"
                                 onClick={() => handleSocialLogin("Google")}
                             >
                                 Google
                             </Button>
                             <Button
                                 variant="outline"
-                                className="rounded-xl border-border/40 bg-background/20 text-foreground hover:bg-background/30 transition-colors duration-320"
+                                className="rounded-xl border-border/40 bg-background/20 text-foreground hover:bg-background/30"
                                 onClick={() => handleSocialLogin("Apple")}
                             >
                                 Apple

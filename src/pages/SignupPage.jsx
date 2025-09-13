@@ -1,5 +1,5 @@
 // src/pages/SignupPage.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Helmet } from "react-helmet";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import AnimatedPage from "@/components/AnimatedPage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { isValidEmail } from "@/lib/utils";
 
 export default function SignupPage() {
     const navigate = useNavigate();
@@ -30,14 +31,12 @@ export default function SignupPage() {
     };
 
     // validators
-    const isEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.toLowerCase());
     const isPhone = (v) => /^[0-9]{9,15}$/.test(v); // numeric only, 9–15 digits
-    const sanitize = (v) => v.replace(/[<>]/g, ""); // block tags/scripts
 
     const canSubmit = () =>
         name.trim().length > 1 &&
         isPhone(phone) &&
-        isEmail(email) &&
+        isValidEmail(email) &&
         password.length >= 8 &&
         password === confirm;
 
@@ -47,7 +46,7 @@ export default function SignupPage() {
             toast({ title: "Nomor HP tidak valid", description: "Gunakan hanya angka (9–15 digit)." });
             return;
         }
-        if (!isEmail(email)) {
+        if (!isValidEmail(email)) {
             toast({ title: "Email tidak valid", description: "Periksa kembali alamat email." });
             return;
         }
@@ -88,9 +87,7 @@ export default function SignupPage() {
                         >
                             &larr; Kembali
                         </Link>
-                        <h1 className="flex-1 text-lg font-semibold text-foreground text-center">
-                            Buat Akun
-                        </h1>
+                        <h1 className="flex-1 text-lg font-semibold text-foreground text-center">Buat Akun</h1>
                         <div className="w-6" aria-hidden />
                     </div>
 
@@ -103,9 +100,7 @@ export default function SignupPage() {
                             </div>
                             <div className="min-w-0">
                                 <p className="text-sm font-medium text-foreground">Selamat datang 👋</p>
-                                <p className="text-xs text-muted-foreground">
-                                    Daftar cepat & aman untuk mulai gunakan Kerjain
-                                </p>
+                                <p className="text-xs text-muted-foreground">Daftar cepat & aman untuk mulai gunakan Kerjain</p>
                             </div>
                         </div>
 
@@ -115,52 +110,61 @@ export default function SignupPage() {
                             <Field
                                 label="Nama Lengkap"
                                 value={name}
-                                onChange={(e) => setName(sanitize(e.target.value))}
+                                onChange={(e) => setName(e.target.value)}
                                 placeholder="Contoh: Budi Santoso"
                                 icon={<User className="h-4 w-4" />}
                                 required
+                                sanitize="strong"
                             />
 
                             {/* phone */}
                             <Field
                                 label="Nomor HP"
                                 value={phone}
-                                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+                                onChange={(e) => setPhone((e.target.value || "").replace(/\D/g, ""))}
                                 placeholder="081234567890"
                                 type="tel"
                                 icon={<Phone className="h-4 w-4" />}
                                 required
+                                // keep custom digits-only logic; skip sanitizer here
+                                sanitize={false}
+                                inputMode="numeric"
                             />
 
                             {/* email */}
                             <Field
                                 label="Email"
                                 value={email}
-                                onChange={(e) => setEmail(sanitize(e.target.value))}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="nama@contoh.com"
                                 type="email"
                                 icon={<Mail className="h-4 w-4" />}
                                 required
+                                sanitize="strong"
+                                inputMode="email"
+                                autoComplete="email"
                             />
 
                             {/* password */}
                             <PasswordField
                                 label="Password"
                                 value={password}
-                                onChange={(e) => setPassword(sanitize(e.target.value))}
+                                onChange={(e) => setPassword(e.target.value)}
                                 showPass={showPass}
                                 setShowPass={setShowPass}
                                 placeholder="Minimal 8 karakter"
+                                sanitize="strong"
                             />
 
                             {/* confirm */}
                             <Field
                                 label="Konfirmasi Password"
                                 value={confirm}
-                                onChange={(e) => setConfirm(sanitize(e.target.value))}
+                                onChange={(e) => setConfirm(e.target.value)}
                                 placeholder="Ketik ulang password"
                                 type={showPass ? "text" : "password"}
                                 required
+                                sanitize="strong"
                             />
 
                             <div className="text-xs text-muted-foreground mt-2">
@@ -174,10 +178,12 @@ export default function SignupPage() {
                             {/* submit */}
                             <Button
                                 type="submit"
-                                className="w-full rounded-2xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold shadow-md hover:scale-[1.01] transition-all duration-350"
+                                className="w-full rounded-2xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold shadow-md hover:scale-[1.01] transition-all duration-320"
                                 disabled={!canSubmit() || loading}
                             >
-                                {loading ? "Memproses..." : (
+                                {loading ? (
+                                    "Memproses..."
+                                ) : (
                                     <span className="inline-flex items-center gap-2">
                                         Daftar
                                         <ArrowRight className="h-4 w-4" />
@@ -201,12 +207,12 @@ export default function SignupPage() {
 }
 
 /* ---------- Reusable field components ---------- */
-function Field({ label, icon, ...props }) {
+function Field({ label, icon, sanitize = "light", className = "", ...props }) {
     return (
         <div>
             <label className="text-xs font-medium text-muted-foreground">{label}</label>
             <div className="mt-1 relative">
-                <Input {...props} className="pl-10 pr-3" />
+                <Input {...props} sanitize={sanitize} className={`pl-10 pr-3 ${className}`} />
                 <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {icon}
                 </div>
@@ -215,7 +221,7 @@ function Field({ label, icon, ...props }) {
     );
 }
 
-function PasswordField({ label, value, onChange, showPass, setShowPass, placeholder }) {
+function PasswordField({ label, value, onChange, showPass, setShowPass, placeholder, sanitize = "light" }) {
     return (
         <div>
             <label className="text-xs font-medium text-muted-foreground">{label}</label>
@@ -227,6 +233,7 @@ function PasswordField({ label, value, onChange, showPass, setShowPass, placehol
                     placeholder={placeholder}
                     className="pl-10 pr-10"
                     required
+                    sanitize={sanitize}
                 />
                 <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     <Lock className="h-4 w-4" />
@@ -239,9 +246,7 @@ function PasswordField({ label, value, onChange, showPass, setShowPass, placehol
                     {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-                Gunakan kombinasi huruf, angka, & simbol untuk keamanan.
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">Gunakan kombinasi huruf, angka, & simbol untuk keamanan.</p>
         </div>
     );
 }

@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import EmptyState from "@/components/feedback/EmptyState";
 import AnimatedPage from "@/components/AnimatedPage";
 import { Helmet } from "react-helmet";
 
@@ -65,12 +67,12 @@ export default function ChatPage() {
                     </h1>
                     <div className="flex items-center gap-2">
                         {/* Compact search (always visible on mobile) */}
-                        <input
-                            type="text"
+                        <Input
                             value={search}
-                            onChange={(e) => setSearch(sanitizeInput(e.target.value))}
+                            onChange={(e) => setSearch(e.target.value)}
+                            sanitize="strong"
                             placeholder="Cari..."
-                            className="w-28 sm:w-40 rounded-full border border-border/50 bg-background/60 px-3 py-1 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-300"
+                            className="w-28 sm:w-40 rounded-full border border-border/50 bg-background/60 px-3 py-1 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent/50 transition-all duration-300"
                         />
                         <Button
                             variant="ghost"
@@ -122,9 +124,13 @@ export default function ChatPage() {
                             </motion.div>
                         ))
                     ) : (
-                        <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                            Tidak ada obrolan ditemukan.
-                        </p>
+                        <div className="px-3 py-6">
+                            <EmptyState
+                                title="Belum ada obrolan"
+                                subtitle="Percakapan akan muncul di sini."
+                                icon={<Search className="h-6 w-6" />}
+                            />
+                        </div>
                     )}
                 </div>
             </div>
