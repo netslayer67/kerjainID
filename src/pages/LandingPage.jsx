@@ -138,7 +138,7 @@ export default function LandingPage() {
                     <div className="max-w-3xl mx-auto text-center">
                         <FadeUp>
                             <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                                Butuh bantuan? Kerjain aja.
+                                Butuh bantuan? <br />Kerjain aja.
                             </h2>
                         </FadeUp>
 
